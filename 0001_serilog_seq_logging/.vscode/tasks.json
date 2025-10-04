@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks":
+    [
+        {
+            "label": "Build ViaCepLogger.Api",
+            "type": "shell",
+            "command": "dotnet build ${workspaceFolder}/src/ViaCepLogger.Api/ViaCepLogger.Api.csproj",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

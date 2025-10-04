@@ -1,0 +1,75 @@
+{
+    // chat
+    "chat.agent.enabled": true,
+    "chat.agent.maxRequests": 1000,
+    "chat.checkpoints.enabled": true,
+    "chat.extensionTools.enabled": true,
+    "chat.mcp.autostart": "newAndOutdated",
+    // Editor
+    "editor.showUnused": true,
+    "editor.autoIndent": "full",
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.showDeprecated": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always",
+        "source.organizeImports": "always"
+    },
+    "editor.trimAutoWhitespace": true,
+    "editor.guides.indentation": true,
+    "editor.showFoldingControls": "always",
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    // Files
+    "files.eol": "\n",
+    "files.exclude": {
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
+    "files.defaultLanguage": "csharp",
+    "files.autoSave": "onFocusChange",
+    // Explorer
+    "explorer.autoReveal": true,
+    "explorer.sortOrder": "type",
+    "explorer.compactFolders": false,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "logs/*.log": "${basename}.log"
+    },
+    // Icons
+    "vsicons.presets.angular": true,
+    // Json
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "always",
+            "source.sort.json": "always"
+        }
+    },
+    // Csharp
+    "[csharp]": {
+        "editor.defaultFormatter": "ms-dotnettools.csharp",
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "always",
+            "source.fixAll.csharp": "always",
+            "source.organizeImports": "always"
+        },
+    },
+    "csharp.format.enable": true,
+    "csharp.debug.justMyCode": true,
+    "csharp.semanticHighlighting.enabled": true,
+    "csharpsortusings.sort.usings.splitGroups": true,
+    "csharpsortusings.sort.usings.order": "System Microsoft",
+    // .NET
+    "dotnet.enableXamlTools": true,
+    "dotnet.defaultSolution": "ViaCepLogger.Api.sln",
+    "dotnet.preferCSharpExtension": true,
+    "dotnet.autoInsert.enableAutoInsert": true,
+    "dotnet.completion.provideRegexCompletions": true,
+    "dotnet.formatting.organizeImportsOnFormat": true,
+    "dotnet.completion.showNameCompletionSuggestions": true,
+    "dotnet.completion.triggerCompletionInArgumentLists": true,
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true
+}

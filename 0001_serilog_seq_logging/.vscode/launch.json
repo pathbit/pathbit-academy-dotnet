@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": ".NET Launch (web)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build ViaCepLogger.Api",
+            "program": "${workspaceFolder}/src/ViaCepLogger.Api/bin/Debug/net9.0/ViaCepLogger.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ViaCepLogger.Api",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        }
+    ]
+}

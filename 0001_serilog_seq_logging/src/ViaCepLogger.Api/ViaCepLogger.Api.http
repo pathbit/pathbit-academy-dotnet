@@ -1,0 +1,50 @@
+### ------------------------------------------------------------
+### Variáveis de ambiente para facilitar os testes
+### ------------------------------------------------------------
+# Use HTTP por padrão (evita problema de certificado self-signed)
+@ViaCepLoggerApiBaseUrl = http://localhost:5001
+
+# Se quiser testar via HTTPS, copie a linha abaixo, cole acima e ajuste conforme necessário
+# @ViaCepLoggerApiBaseUrl = https://localhost:7001
+
+### ------------------------------------------------------------
+### Health Check
+### ------------------------------------------------------------
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/health
+Accept: application/json
+
+### ------------------------------------------------------------
+### Rota raiz (redireciona para Swagger)
+### ------------------------------------------------------------
+GET {{ViaCepLoggerApiBaseUrl}}/
+Accept: text/html
+
+### ------------------------------------------------------------
+### Cenários felizes (200)
+### ------------------------------------------------------------
+### CEP Válido - São Paulo Centro
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/01001000
+Accept: application/json
+
+### CEP Válido - Rio de Janeiro Copacabana
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/22070900
+Accept: application/json
+
+### ------------------------------------------------------------
+### Cenários de erro esperados
+### ------------------------------------------------------------
+### CEP Inválido - Formato correto mas não existe (404)
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/00000000
+Accept: application/json
+
+### CEP Inválido - Formato incorreto (400)
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/abc123
+Accept: application/json
+
+### CEP Inválido - Muito curto (400)
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/123
+Accept: application/json
+
+### CEP Inválido - Muito longo (400)
+GET {{ViaCepLoggerApiBaseUrl}}/api/cep/123456789
+Accept: application/json

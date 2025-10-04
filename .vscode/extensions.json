@@ -1,0 +1,21 @@
+{
+    "recommendations": [
+        "VisualStudioExptTeam.vscodeintellicode",
+        "VisualStudioExptTeam.vscodeintellicode-completions",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-dotnettools.vscode-aspnetcore",
+        "ms-dotnettools.vscode-nuget-package-manager",
+        "ms-dotnettools.vscode-razor",
+        "ms-dotnettools.vscode-webview-debug",
+        "ms-dotnettools.vscode-dotnet-pack",
+        "ms-dotnettools.vscode-dotnet-test-adapter",
+        "ms-dotnettools.vscode-dotnet-telemetry",
+        "ms-dotnettools.vscode-dotnet-asset",
+        "ms-dotnettools.vscode-dotnet-asset-templates",
+        "ms-dotnettools.vscode-dotnet-asset-templates-razor",
+        "ms-dotnettools.vscode-dotnet-asset-templates-web",
+        "ms-dotnettools.vscode-dotnet-asset-templates-webapi",
+    ]
+}

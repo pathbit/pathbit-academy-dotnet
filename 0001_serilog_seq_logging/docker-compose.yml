@@ -1,0 +1,61 @@
+name: pathbit-academy-dotnet
+
+services:
+  # Seq (UI + ingestão HTTP)
+  seq:
+    image: datalust/seq:latest
+    container_name: pb-seqlogging
+    env_file:
+      - .env
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINUSERNAME=${SEQ_ADMIN_USERNAME:-admin}
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_ADMIN_PASSWORD:-ChangeMe!123!}
+    ports:
+      - "5341:80" # UI e ingestão HTTP do Seq
+    volumes:
+      - seq-data:/data
+    restart: unless-stopped
+
+  # Entrada GELF para Docker -> Seq (recomendado pela Datalust)
+  seq-gelf:
+    image: datalust/seq-input-gelf:latest
+    container_name: pb-seq-gelf
+    depends_on:
+      - seq
+    environment:
+      - SEQ_ADDRESS=http://seq:80 # encaminha para o Seq via HTTP
+      - SEQ_API_KEY=${SEQ_INGESTION_API_KEY:-} # opcional se o Seq exigir API key
+      # - GELF_ADDRESS=udp://0.0.0.0:12201     # default já é esse
+    ports:
+      - "12201:12201/udp" # expõe a porta GELF no host
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/ViaCepLogger.Api/Dockerfile
+    container_name: pb-viaceploggerapi
+    depends_on:
+      - seq
+      - seq-gelf
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Se você também quiser enviar por HTTP com Serilog/Sinks:
+      # - Seq__ServerUrl=http://seq:80
+      # - Seq__ApiKey=${SEQ_INGESTION_API_KEY:-}
+      # - Seq__UseHttpIngestion=true
+      - Seq__UseAgentBridge=true
+      - Seq__UseHttpIngestion=false
+      - Seq__ApplicationName=ViaCepLogger.Api
+    ports:
+      - "8080:8080"
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:12201 # driver envia do host para o seq-gelf
+        tag: viaceploggerapi
+    restart: unless-stopped
+
+volumes:
+  seq-data:

@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks":
+    [
+        {
+            "label": "Build Path.Infobase.WebHost",
+            "type": "shell",
+            "command": "dotnet build ${workspaceFolder}/src/WebHost/Path.Infobase.WebHost.csproj",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

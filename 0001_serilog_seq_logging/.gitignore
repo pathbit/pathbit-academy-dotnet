@@ -1558,9 +1558,6 @@ ehthumbs_vista.db
 ##
 ## Get latest from `dotnet new gitignore`
 
-# dotenv files
-# .env
-
 # User-specific files
 *.rsuser
 *.suo
@@ -2044,7 +2041,6 @@ $RECYCLE.BIN/
 **/*output.*
 **/.DS_Store
 **/[Cc]overage*/
-**/.docker/
+**/.docker/*
 **/bin/
 **/obj/
-
