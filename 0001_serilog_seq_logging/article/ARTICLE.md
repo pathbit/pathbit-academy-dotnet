@@ -1,4 +1,4 @@
-# Serilog ou caos? Se você ainda usa Console.WriteLine, já perdeu
+# Como armazenar logs de forma eficiente no .NET com Serilog e Seq
 
 **Vamos dar um contexto no tema:**
 
