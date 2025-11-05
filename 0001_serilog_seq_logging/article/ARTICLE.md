@@ -39,7 +39,7 @@ Console.WriteLine($"Usuário {userId} acessou o recurso {resourceId} em {DateTim
 **Jeito certo (logging estruturado):**
 
 ```csharp
-_logger.LogInformation("Usuário {UserId} acessou o recurso {ResourceId}", userId, resourceId);
+_logger.Information("Usuário {UserId} acessou o recurso {ResourceId}", userId, resourceId);
 ```
 
 A diferença parece sutil, mas é fundamental. No segundo caso, `UserId` e `ResourceId` são propriedades estruturadas que você pode consultar no Seq com queries como `UserId = 123` ou `ResourceId = "abc"`. No primeiro caso, é só uma string que você teria que fazer regex ou parsing manual para extrair informação.
@@ -221,7 +221,7 @@ public async Task<ViaCepResponse?> GetAddressByCepAsync(string cep)
 {
     try
     {
-        _logger.LogInformation("Iniciando consulta de CEP {Cep}", cep);
+        _logger.Information("Iniciando consulta de CEP {Cep}", cep);
 
         var response = await _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/");
 
@@ -244,7 +244,7 @@ public async Task<ViaCepResponse?> GetAddressByCepAsync(string cep)
         var content = await response.Content.ReadAsStringAsync();
         var address = JsonSerializer.Deserialize<ViaCepResponse>(content);
 
-        _logger.LogInformation(
+        _logger.Information(
             "CEP {Cep} consultado com sucesso. Cidade: {Cidade}, UF: {UF}",
             cep,
             address?.Localidade,
@@ -412,26 +412,26 @@ O `DOTNET_RUNNING_IN_CONTAINER` fica `true` nesse cenário, e as variáveis refo
 
 ```csharp
 // NUNCA faça isso
-_logger.LogInformation("Usuário {Email} fez login com senha {Password}", email, password);
+_logger.Information("Usuário {Email} fez login com senha {Password}", email, password);
 
 // Faça isso
-_logger.LogInformation("Usuário {Email} fez login com sucesso", email);
+_logger.Information("Usuário {Email} fez login com sucesso", email);
 ```
 
 ### 3. Use propriedades estruturadas, não interpolação
 
 ```csharp
 // Errado
-_logger.LogInformation($"Processando pedido {orderId}");
+_logger.Information($"Processando pedido {orderId}");
 
 // Certo
-_logger.LogInformation("Processando pedido {OrderId}", orderId);
+_logger.Information("Processando pedido {OrderId}", orderId);
 ```
 
 ### 4. Adicione contexto com scopes
 
 ```csharp
-_logger.LogInformation("Processando requisição para usuário {UserId} e request {RequestId}", userId, requestId);
+_logger.Information("Processando requisição para usuário {UserId} e request {RequestId}", userId, requestId);
 ```
 
 ### 5. Não exagere nos logs
