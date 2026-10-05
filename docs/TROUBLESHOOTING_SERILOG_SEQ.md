@@ -199,5 +199,5 @@ services:
 
 - [Documentação Serilog](https://serilog.net/)
 - [Documentação Seq](https://docs.datalust.co/docs)
-- [NuGet Troubleshooting](https://learn.microsoft.com/en-us/nuget/consume-packages/troubleshooting)
-- [Docker Troubleshooting](https://docs.docker.com/config/daemon/troubleshoot/)
+- [NuGet Troubleshooting](https://learn.microsoft.com/nuget/consume-packages/package-restore-troubleshooting)
+- [Docker Troubleshooting](https://docs.docker.com/engine/daemon/troubleshoot/)
