@@ -2047,4 +2047,5 @@ $RECYCLE.BIN/
 **/.docker/
 **/bin/
 **/obj/
-
+**/tmp/
+**/temp/
