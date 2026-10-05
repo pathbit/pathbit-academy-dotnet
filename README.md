@@ -16,6 +16,16 @@ Aprenda a implementar logging estruturado em aplicações .NET usando Serilog e 
 
 ---
 
+### [0002 - Versionamento de API no ASP.NET Core](./0002_versionamento_api) (projeto de exemplo)
+
+**Categoria:** .NET / APIs
+
+Exemplo executável com duas versões da mesma API (v1 deprecada e v2), rotas por versão na URL, headers `api-supported-versions` / `api-deprecated-versions` e um documento Swagger por versão. Ainda sem artigo publicado.
+
+**Tecnologias:** .NET 9.0, Microsoft.AspNetCore.Mvc.Versioning, Swashbuckle
+
+---
+
 ## 🎯 Sobre o Pathbit Academy
 
 O Pathbit Academy é uma iniciativa da Pathbit para compartilhar conhecimento técnico de qualidade, com foco em aplicações práticas e exemplos reais. Todos os artigos incluem código fonte completo e instruções detalhadas para execução.

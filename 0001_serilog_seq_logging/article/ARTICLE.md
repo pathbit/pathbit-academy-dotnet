@@ -444,10 +444,10 @@ Mais logs não significa melhor troubleshooting. Logs demais geram ruído e difi
 *Figura 5: Logs formatados aparecendo no terminal durante a execução*
 
 ![Configuração do Serilog no VS Code](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/06.png)
-*Figura 6: Código de configuração do Serilog no Program.cs*
+*Figura 6: Configuração do Serilog em `Extensions/SerilogExtensions.cs` (versão inicial; o código atual também escolhe entre sink HTTP e GELF conforme o ambiente)*
 
 ![Diagrama de arquitetura da solução](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/07.png)
-*Figura 7: Fluxo de logs da aplicação através do Serilog para Console e Seq*
+*Figura 7: Fluxo de logs: Serilog grava no console e envia ao Seq por HTTP (`dotnet run`) ou via driver GELF do Docker (`docker compose`)*
 
 Todo o código fonte está disponível na pasta `src/` deste artigo e no repositório do GitHub.
 
@@ -459,22 +459,22 @@ Todo o código fonte está disponível na pasta `src/` deste artigo e no reposit
 
 **Opção 2:** Rode a stack completa localmente com Docker e .NET CLI para sentir os logs estruturados na prática.
 
-> Passo a passo rápido (executar dentro da pasta `src/`):
+> Passo a passo rápido (executar na pasta `0001_serilog_seq_logging/`, onde está o `docker-compose.yml`):
 
 ```bash
 # 1. Subir o Seq
-cd src
-docker-compose up -d
+cd 0001_serilog_seq_logging
+docker compose up -d seq
 
-# 2. Executar a API
-dotnet run --project ViaCepLogger.Api
+# 2. Executar a API (o sink HTTP envia os logs direto para o Seq)
+dotnet run --project src/ViaCepLogger.Api
 
 # 3. Testar os endpoints
-curl http://localhost:5001/api/cep/01001000  # Sucesso
-curl http://localhost:5001/api/cep/00000000  # Não encontrado
-curl http://localhost:5001/api/cep/abc123    # Formato inválido
+curl http://localhost:5001/api/cep/01001000  # Sucesso (200)
+curl http://localhost:5001/api/cep/00000000  # Não encontrado (404)
+curl http://localhost:5001/api/cep/abc123    # Formato inválido (400)
 
-# 4. Acessar o Seq
+# 4. Acessar o Seq (login do .env; no primeiro acesso o Seq pede para trocar a senha)
 http://localhost:5341/
 ```
 

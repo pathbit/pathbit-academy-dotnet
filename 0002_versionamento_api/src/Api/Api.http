@@ -1,6 +1,30 @@
-@Api_HostAddress = http://localhost:5086
+# Porta do perfil "http" em Properties/launchSettings.json
+@Api_HostAddress = http://localhost:7000
 
-GET {{Api_HostAddress}}/weatherforecast/
+### v1 (deprecada): lista de usuários
+GET {{Api_HostAddress}}/api/v1/users
 Accept: application/json
 
-###
+### v2: lista de usuários
+GET {{Api_HostAddress}}/api/v2/users
+Accept: application/json
+
+### v1 (deprecada): usuário por id
+GET {{Api_HostAddress}}/api/v1/users/1
+Accept: application/json
+
+### v2: a rota mudou para /users/id/{id}
+GET {{Api_HostAddress}}/api/v2/users/id/1
+Accept: application/json
+
+### v1 (deprecada): Document é string formatada ("123.456.789-00")
+GET {{Api_HostAddress}}/api/v1/customers/1
+Accept: application/json
+
+### v2: Document virou número (12345678900), mudança que quebra contrato
+GET {{Api_HostAddress}}/api/v2/customers/1
+Accept: application/json
+
+### Versão inexistente: 400 UnsupportedApiVersion
+GET {{Api_HostAddress}}/api/v3/users
+Accept: application/json

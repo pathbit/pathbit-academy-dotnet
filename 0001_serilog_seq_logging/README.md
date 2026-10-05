@@ -3,7 +3,9 @@
 ## 📌 Sobre o Projeto
 
 API .NET que demonstra **logging estruturado** usando **Serilog** e **Seq**.
-A aplicação consome a API pública do ViaCEP para consultar endereços por CEP, registrando logs estruturados de todas as operações.### 🎯 Funcionalidades
+A aplicação consome a API pública do ViaCEP para consultar endereços por CEP, registrando logs estruturados de todas as operações.
+
+### 🎯 Funcionalidades
 
 - ✅ Consulta de CEP via API ViaCEP
 - ✅ Logging estruturado com Serilog
@@ -37,6 +39,8 @@ docker compose ps
 
 - **Seq (UI + ingestão HTTP)**: <http://localhost:5341>
 - **Sidecar GELF**: escuta em `udp://localhost:12201` (`pb-seq-gelf`)
+
+> **Login no Seq:** usuário e senha vêm do `.env` (`SEQ_ADMIN_USERNAME` / `SEQ_ADMIN_PASSWORD`). No primeiro acesso o Seq **exige trocar a senha**; isso é comportamento do Seq, não erro. As credenciais só valem na criação do volume `seq-data`: se você mudar o `.env` depois, rode `docker compose down -v` para recriar.
 
 Depois de gerar requisições, confira no Seq se os eventos chegam com o `tag` `viaceploggerapi`. Se mudar variáveis/ports, recrie os containers (`docker compose down && docker compose up -d seq seq-gelf api`).
 
@@ -115,7 +119,7 @@ Logs também são exibidos no console com formatação colorida e estruturada.
 | Tecnologia | Versão | Propósito |
 |------------|--------|-----------|
 | .NET | 9.0 | Framework principal |
-| Serilog | 8.0.3 | Logging estruturado |
+| Serilog.AspNetCore / Serilog.Sinks.Seq | 9.0.0 | Logging estruturado |
 | Seq | - | Dashboard de logs |
 | Swagger/OpenAPI | - | Documentação da API |
 | ViaCEP API | - | Fonte de dados de CEP |
@@ -125,22 +129,27 @@ Logs também são exibidos no console com formatação colorida e estruturada.
 ## 🔍 Estrutura do Projeto
 
 ```text
-src/
-├── docker-compose.yml              # Configuração do Seq
-├── ViaCepLogger.Api/
-│   ├── ViaCepLogger.Api.http      # Testes HTTP (VS Code)
-│   ├── Program.cs                 # Configuração da aplicação
-│   ├── Usings.cs                  # Global usings do projeto
-│   ├── appsettings.json          # Configurações
-│   ├── Controllers/
-│   │   └── CepController.cs      # Endpoints da API
-│   ├── Services/
-│   │   └── ViaCepService.cs      # Integração com ViaCEP
-│   ├── Models/
-│   │   └── ViaCepResponse.cs     # Modelo de dados
-│   └── Infrastructure/
-│       └── Converters/
-│           └── StringToBoolConverter.cs  # Converters customizados
+0001_serilog_seq_logging/
+├── docker-compose.yml              # Seq + sidecar GELF + API
+├── .env.example                    # Credenciais do Seq (copie para .env)
+└── src/
+    └── ViaCepLogger.Api/
+        ├── Dockerfile                 # Imagem usada pelo serviço `api`
+        ├── ViaCepLogger.Api.http      # Testes HTTP (VS Code)
+        ├── Program.cs                 # Configuração da aplicação
+        ├── Usings.cs                  # Global usings do projeto
+        ├── appsettings.json           # Configurações (Seq em http://localhost:5341)
+        ├── Controllers/
+        │   └── CepController.cs       # Endpoints da API
+        ├── Extensions/
+        │   └── SerilogExtensions.cs   # Configuração do Serilog (sink HTTP ou GELF)
+        ├── Services/
+        │   └── ViaCepService.cs       # Integração com ViaCEP
+        ├── Models/
+        │   └── ViaCepResponse.cs      # Modelo de dados
+        └── Infrastructure/
+            └── Converters/
+                └── StringToBoolConverter.cs  # ViaCEP devolve "erro": "true" como string
 ```
 
 ---
@@ -171,7 +180,8 @@ src/
 
 ```json
 {
-  "message": "CEP não encontrado"
+  "error": "CEP não encontrado",
+  "message": "Não foi possível encontrar informações para o CEP 00000000"
 }
 ```
 
@@ -179,7 +189,8 @@ src/
 
 ```json
 {
-  "message": "CEP deve conter exatamente 8 dígitos"
+  "error": "Formato de CEP inválido",
+  "message": "O CEP deve conter exatamente 8 dígitos numéricos"
 }
 ```
 
