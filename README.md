@@ -52,6 +52,10 @@ Encontrou algum erro ou tem sugestões? Abra uma issue ou envie um pull request!
 - **Website:** [pathbit.com](https://pathbit.com)
 - **LinkedIn:** [Pathbit](https://linkedin.com/company/pathbit)
 
+## 📄 Licença
+
+Distribuído sob a **Licença MIT**. O texto completo está em [LICENSE](./LICENSE).
+
 ---
 
-**Pathbit** - Transformando ideias em soluções tecnológicas
+**Desenvolvido com ❤️ pela [Pathbit](https://pathbit.co)**
