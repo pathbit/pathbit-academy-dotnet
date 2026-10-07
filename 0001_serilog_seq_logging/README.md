@@ -31,6 +31,7 @@ A aplicação consome a API pública do ViaCEP para consultar endereços por CEP
 cd 0001_serilog_seq_logging
 
 # Subir Seq + sidecar GELF + API
+cp .env.example .env  # edite usuário/senha antes de subir
 docker compose up -d seq seq-gelf api
 
 # Conferir os serviços
@@ -40,18 +41,21 @@ docker compose ps
 - **Seq (UI + ingestão HTTP)**: <http://localhost:5341>
 - **Sidecar GELF**: escuta em `udp://localhost:12201` (`pb-seq-gelf`)
 
-> **Login no Seq:** usuário e senha vêm do `.env` (`SEQ_ADMIN_USERNAME` / `SEQ_ADMIN_PASSWORD`). No primeiro acesso o Seq **exige trocar a senha**; isso é comportamento do Seq, não erro. As credenciais só valem na criação do volume `seq-data`: se você mudar o `.env` depois, rode `docker compose down -v` para recriar.
+> **Login no Seq:** usuário e senha vêm do `.env` (`SEQ_ADMIN_USERNAME` / `SEQ_ADMIN_PASSWORD`). No primeiro acesso o Seq **exige trocar a senha**; isso é comportamento do Seq, não erro. As credenciais só valem na criação do volume `seq-data`: alterar o `.env` não redefine um usuário existente. Use a administração do Seq; `docker compose down -v` apaga todos os logs e só deve ser usado após backup, em uma demo descartável.
 
 Depois de gerar requisições, confira no Seq se os eventos chegam com o `tag` `viaceploggerapi`. Se mudar variáveis/ports, recrie os containers (`docker compose down && docker compose up -d seq seq-gelf api`).
 
 > Dica: ao executar `dotnet run`, o Serilog ativa o sink HTTP automaticamente (`Seq__UseHttpIngestion=true`), então o sidecar só é necessário dentro de containers.
 
 
-### 🚀 2. Executar a API
+### 🚀 2. Alternativa: executar a API fora do container
+
+Escolha esta opção **ou** a API do compose. A API em container usa
+<http://localhost:8080>; o perfil local usa as URLs abaixo.
 
 ```bash
 # Restaurar dependências
-dotnet restore
+dotnet restore src/ViaCepLogger.Api/ViaCepLogger.Api.csproj
 
 # Executar a aplicação
 dotnet run --project src/ViaCepLogger.Api/ViaCepLogger.Api.csproj
@@ -160,7 +164,7 @@ Logs também são exibidos no console com formatação colorida e estruturada.
 |--------|----------|-----------|
 | `GET` | `/` | Redireciona para Swagger UI |
 | `GET` | `/api/cep/health` | Health check da aplicação |
-| `GET` | `/api/cep/{cep}` | Consulta CEP via ViaCEP |
+| `GET` | `/api/cep/{cep}` | Consulta CEP via ViaCEP (400/404/502/504 conforme a causa) |
 
 ### 📝 Exemplos de Resposta
 

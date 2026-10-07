@@ -11,7 +11,9 @@ public class StringToBoolConverter : JsonConverter<bool>
         if (reader.TokenType == JsonTokenType.String)
         {
             var stringValue = reader.GetString();
-            return bool.TryParse(stringValue, out var result) && result;
+            if (bool.TryParse(stringValue, out var result))
+                return result;
+            throw new JsonException("O campo erro deve conter um booleano ou a string true/false.");
         }
 
         if (reader.TokenType == JsonTokenType.True)
@@ -20,7 +22,7 @@ public class StringToBoolConverter : JsonConverter<bool>
         if (reader.TokenType == JsonTokenType.False)
             return false;
 
-        return false;
+        throw new JsonException("Tipo inválido para o campo erro retornado pelo ViaCEP.");
     }
 
     public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)

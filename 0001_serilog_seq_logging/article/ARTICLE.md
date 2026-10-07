@@ -18,11 +18,11 @@ E aí você faz o quê? Adiciona mais `Console.WriteLine` tentando adivinhar ond
 
 ## Por que Serilog e Seq?
 
-Existem várias opções de logging no ecossistema .NET: ILogger nativo, NLog, log4net, e por aí vai. Então por que Serilog e Seq?
+Existem várias opções de logging no ecossistema .NET: `ILogger` (a abstração nativa), NLog, log4net, e por aí vai. Então por que Serilog e Seq?
 
 **Serilog** é uma biblioteca de logging estruturado que trata logs como dados, não como texto. Cada log é um evento com propriedades tipadas que você pode consultar, filtrar e analisar. É simples de configurar, tem performance excelente e se integra perfeitamente com o ecossistema .NET.
 
-**Seq** é uma ferramenta de visualização e análise de logs estruturados. Pense nele como um "banco de dados de logs" com uma interface web poderosa para consultas. A versão gratuita permite até 50GB de logs por mês, o que é mais do que suficiente para projetos pequenos e médios.
+**Seq** é uma ferramenta de visualização e análise de logs estruturados. Pense nele como um "banco de dados de logs" com uma interface web poderosa para consultas. A licença Individual permite um usuário e até 50 GB de dados retidos, não 50 GB de ingestão mensal. Para acesso por uma equipe, confira a licença multiusuário em https://datalust.co/pricing.
 
 A combinação dos dois resolve o problema de forma elegante: você escreve logs estruturados com Serilog e visualiza/analisa com Seq. Simples assim.
 
@@ -66,15 +66,11 @@ Para projetos pequenos e médios, Serilog + Seq é o sweet spot entre simplicida
 
 ## Limitações do Seq gratuito
 
-O Seq tem uma versão gratuita com limite de **50GB de logs por mês**. Parece pouco? Vamos fazer as contas:
-
-- 50GB = 50.000 MB
-- Assumindo 1KB por evento de log (o que é bastante)
-- 50.000 MB / 1KB = 50 milhões de eventos por mês
-- Isso dá aproximadamente 1,6 milhões de eventos por dia
-- Ou 19 eventos por segundo, 24/7
-
-Para a maioria dos projetos pequenos e médios, isso é mais do que suficiente. Se você está ultrapassando esse limite, provavelmente já tem budget para a versão paga ou para uma solução enterprise.
+A licença Individual permite **um usuário e 50 GB de armazenamento retido**.
+Não é uma franquia de ingestão mensal. Retenção, compressão e tamanho de evento
+alteram quantos registros cabem; a divisão por 1 KB não demonstra capacidade
+ou SLA. Mais de uma pessoa acessando a instância exige licença multiusuário.
+Confira as condições atuais em https://datalust.co/pricing.
 
 **Dicas para não estourar o limite:**
 
@@ -91,17 +87,17 @@ Vamos criar uma API real que consome o serviço ViaCEP e registra logs estrutura
 
 - Requisição bem-sucedida (200)
 - CEP não encontrado (404)
-- Erro no serviço externo (500)
-- Timeout de requisição
+- Falha no serviço externo (502)
+- Timeout de requisição (504)
 - Formato de CEP inválido (400)
 
 ### Estrutura do projeto
 
 ```bash
-src/
-├── ViaCepLogger.sln
+0001_serilog_seq_logging/
+├── ViaCepLogger.Api.sln
 ├── docker-compose.yml
-└── ViaCepLogger.Api/
+└── src/ViaCepLogger.Api/
     ├── ViaCepLogger.Api.csproj
     ├── Program.cs
     ├── appsettings.json
@@ -186,20 +182,22 @@ options.EnrichDiagnosticContext = (ctx, httpContext) =>
 - O nome da aplicação (`Seq:ApplicationName`) vira uma propriedade fixa (`Application`) em todos os eventos.
 - Fora de containers o sink HTTP (`Serilog.Sinks.Seq`) fica ligado por padrão, enviando tudo direto para o Seq.
 - Dentro de containers, a variável `DOTNET_RUNNING_IN_CONTAINER` ativa o bridge por padrão; no compose reforçamos `Seq__UseAgentBridge=true`/`Seq__UseHttpIngestion=false` para priorizar a saída estruturada no stdout.
-- Tudo continua assíncrono (`Serilog.Sinks.Async`), então logging não bloqueia requisições.
+- O buffer assíncrono desacopla a escrita, mas tem capacidade finita e pode descartar eventos ou bloquear conforme a política configurada. Monitore saturação e garanta flush no encerramento.
 
 #### Configuração via appsettings
 
 ```json
-"Seq": {
-  "ServerUrl": "http://localhost:5341",
-  "UseHttpIngestion": true,
-  "UseAgentBridge": false,
-  "ApplicationName": "ViaCepLogger.Api"
+{
+  "Seq": {
+    "ServerUrl": "http://localhost:5341",
+    "UseHttpIngestion": true,
+    "UseAgentBridge": false,
+    "ApplicationName": "ViaCepLogger.Api"
+  }
 }
 ```
 
-Em ambientes containerizados sobrescrevemos com variáveis (`Seq__UseAgentBridge=true`, `Seq__UseHttpIngestion=false`) para priorizar a saída compacta no stdout. Como a demo deixa a ingestão sem chave (`SEQ_REQUIRE_INGESTION_API_KEY=false`), `Seq__ApiKey` pode ficar vazio; se você exigir chave, basta definir o valor via variável.
+Em ambientes containerizados sobrescrevemos com variáveis (`Seq__UseAgentBridge=true`, `Seq__UseHttpIngestion=false`) para priorizar a saída compacta no stdout. A variável `SEQ_REQUIRE_INGESTION_API_KEY` do antigo exemplo não configura por si só o Seq: ela não era usada pelo compose. Defina a exigência no painel do Seq, crie uma chave de ingestão e configure `Seq__ApiKey` ou `SEQ_INGESTION_API_KEY` no sink/sidecar.
 
 #### Pacotes que fazem a mágica acontecer
 
@@ -210,68 +208,87 @@ Em ambientes containerizados sobrescrevemos com variáveis (`Seq__UseAgentBridge
 - `Serilog.Sinks.Seq`: envia eventos via HTTP quando habilitado.
 - `Serilog.Sinks.Async`: mantém os sinks desacoplados da thread da requisição.
 
-> Sem o buffer assíncrono, cada `Log.Information` aguardaria o console ou Seq finalizar a escrita; com `WriteTo.Async(...)`, o fluxo segue sem travar I/O.
+> O comportamento depende do sink: alguns já usam batching. `WriteTo.Async` não é garantia de latência zero nem entrega durável; configure limites e observe eventos perdidos.
 
 ### Implementação do serviço
 
 O `ViaCepService` é onde a mágica acontece. Vamos logar cada cenário de forma estruturada:
 
 ```csharp
-public async Task<ViaCepResponse?> GetAddressByCepAsync(string cep)
-{
-    try
+    public async Task<ViaCepResponse?> GetAddressByCepAsync(string cep)
     {
-        _logger.Information("Iniciando consulta de CEP {Cep}", cep);
-
-        var response = await _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/");
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        try
         {
-            _logger.LogWarning("CEP {Cep} não encontrado (404)", cep);
-            return null;
-        }
+            _logger.LogInformation("Iniciando consulta de CEP {Cep}", cep);
 
-        if (!response.IsSuccessStatusCode)
+            using var response = await _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning("CEP {Cep} não encontrado (404)", cep);
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError(
+                    "Erro ao consultar CEP {Cep}. Status: {StatusCode}",
+                    cep,
+                    (int)response.StatusCode
+                );
+                response.EnsureSuccessStatusCode();
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var address = JsonSerializer.Deserialize<ViaCepResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (address?.Erro == true)
+            {
+                _logger.LogWarning("CEP {Cep} retornou erro na resposta da API", cep);
+                return null;
+            }
+
+            _logger.LogInformation(
+                "CEP {Cep} consultado com sucesso. Cidade: {Cidade}, UF: {UF}",
+                cep,
+                address?.Localidade,
+                address?.Uf
+            );
+
+            return address;
+        }
+        catch (HttpRequestException ex)
         {
             _logger.LogError(
-                "Erro ao consultar CEP {Cep}. Status: {StatusCode}",
+                ex,
+                "Erro de rede ao consultar CEP {Cep}. Mensagem: {ErrorMessage}",
                 cep,
-                response.StatusCode
+                ex.Message
             );
-            return null;
+            throw;
         }
-
-        var content = await response.Content.ReadAsStringAsync();
-        var address = JsonSerializer.Deserialize<ViaCepResponse>(content);
-
-        _logger.Information(
-            "CEP {Cep} consultado com sucesso. Cidade: {Cidade}, UF: {UF}",
-            cep,
-            address?.Localidade,
-            address?.Uf
-        );
-
-        return address;
+        catch (TaskCanceledException ex)
+        {
+            _logger.LogError(
+                ex,
+                "Timeout ao consultar CEP {Cep}",
+                cep
+            );
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(
+                ex,
+                "Erro ao deserializar resposta do CEP {Cep}",
+                cep
+            );
+            throw;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        _logger.LogError(
-            ex,
-            "Erro de rede ao consultar CEP {Cep}",
-            cep
-        );
-        return null;
-    }
-    catch (TaskCanceledException ex)
-    {
-        _logger.LogError(
-            ex,
-            "Timeout ao consultar CEP {Cep}",
-            cep
-        );
-        return null;
-    }
-}
 ```
 
 **Pontos importantes:**
@@ -284,7 +301,7 @@ public async Task<ViaCepResponse?> GetAddressByCepAsync(string cep)
 
 Depois de executar algumas requisições, você pode usar o Seq para análises poderosas:
 
-![Dashboard do Seq mostrando logs estruturados](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/01.png)
+![Dashboard do Seq mostrando logs estruturados](../assets/01.png)
 *Figura 1: Interface principal do Seq com eventos de log da aplicação ViaCepLogger*
 
 **Consultas úteis:**
@@ -297,22 +314,22 @@ Depois de executar algumas requisições, você pode usar o Seq para análises p
 StatusCode = 404
 
 # Requisições lentas (mais de 1 segundo)
-@Duration > 1000
+Elapsed > 1000
 
 # Erros de um CEP específico
 Cep = '01001000' and @Level = 'Error'
 
 # Agrupamento por status code
-select StatusCode, count(*) group by StatusCode
+select StatusCode, count(*) from stream group by StatusCode
 ```
 
-![Detalhes de um log estruturado no Seq](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/02.png)
+![Detalhes de um log estruturado no Seq](../assets/02.png)
 *Figura 2: Propriedades estruturadas de um evento de log*
 
-![Query e filtro de logs no Seq](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/03.png)
+![Query e filtro de logs no Seq](../assets/03.png)
 *Figura 3: Filtrando logs por StatusCode no Seq*
 
-![Gráfico de agregação de logs](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/04.png)
+![Gráfico de agregação de logs](../assets/04.png)
 *Figura 4: Visualização gráfica da distribuição de logs por status code*
 
 O Seq também permite criar dashboards, alertas e exportar dados para análise externa.
@@ -321,7 +338,7 @@ O Seq também permite criar dashboards, alertas e exportar dados para análise e
 
 Seq não dispara alerta sozinho: você precisa combinar **signals**, **alerts** e um **output app**. O fluxo básico é:
 
-1. Abra `Settings → Signals` e crie um filtro que represente a condição que você quer monitorar (por exemplo `@Level = 'Error' and SourceContext = 'ViaCepLogger.Api'`).
+1. Abra `Settings → Signals` e crie um filtro que represente a condição que você quer monitorar (por exemplo `@Level = 'Error' and Application = 'ViaCepLogger.Api'`).
 2. Em `Settings → Alerts`, associe o signal ao alerta e defina limites, frequência e janela de observação.
 3. Instale o output app desejado em `Settings → Output apps` (e-mail, Slack, Teams, webhook, etc.). Os apps oficiais estão em [datalust.co/docs/installing-output-apps](https://datalust.co/docs/installing-output-apps) e você pode publicar apps próprios se precisar.
 
@@ -394,7 +411,7 @@ O serviço da API ficou assim no `docker-compose.yml`:
 
 O `DOTNET_RUNNING_IN_CONTAINER` fica `true` nesse cenário, e as variáveis reforçam o modo bridge para alimentar o driver GELF.
 
-![Log de erro com stack trace completo](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/08.png)
+![Log de erro com stack trace completo](../assets/08.png)
 *Figura 8: Detalhes de um erro no Seq incluindo stack trace e contexto*
 
 ## Boas práticas de logging
@@ -440,13 +457,13 @@ Mais logs não significa melhor troubleshooting. Logs demais geram ruído e difi
 
 ## Ah pare de falar e `Show-Me-The-Code`
 
-![Logs estruturados no console](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/05.png)
+![Logs estruturados no console](../assets/05.png)
 *Figura 5: Logs formatados aparecendo no terminal durante a execução*
 
-![Configuração do Serilog no VS Code](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/06.png)
+![Configuração do Serilog no VS Code](../assets/06.png)
 *Figura 6: Configuração do Serilog em `Extensions/SerilogExtensions.cs` (versão inicial; o código atual também escolhe entre sink HTTP e GELF conforme o ambiente)*
 
-![Diagrama de arquitetura da solução](https://raw.githubusercontent.com/pathbit/pathbit-academy-dotnet/master/0001_serilog_seq_logging/assets/07.png)
+![Diagrama de arquitetura da solução](../assets/07.png)
 *Figura 7: Fluxo de logs: Serilog grava no console e envia ao Seq por HTTP (`dotnet run`) ou via driver GELF do Docker (`docker compose`)*
 
 Todo o código fonte está disponível na pasta `src/` deste artigo e no repositório do GitHub.
@@ -462,8 +479,9 @@ Todo o código fonte está disponível na pasta `src/` deste artigo e no reposit
 > Passo a passo rápido (executar na pasta `0001_serilog_seq_logging/`, onde está o `docker-compose.yml`):
 
 ```bash
-# 1. Subir o Seq
+# 1. Subir o Seq (a partir da raiz do repositório)
 cd 0001_serilog_seq_logging
+cp .env.example .env  # edite as credenciais antes de subir
 docker compose up -d seq
 
 # 2. Executar a API (o sink HTTP envia os logs direto para o Seq)
@@ -475,8 +493,15 @@ curl http://localhost:5001/api/cep/00000000  # Não encontrado (404)
 curl http://localhost:5001/api/cep/abc123    # Formato inválido (400)
 
 # 4. Acessar o Seq (login do .env; no primeiro acesso o Seq pede para trocar a senha)
-http://localhost:5341/
+# Abra no navegador: http://localhost:5341/
 ```
+
+## Falha externa não é CEP inexistente
+
+A API distingue entrada inválida (400), CEP inexistente (404), falha do ViaCEP
+(502) e timeout (504). Registrar uma falha externa e devolver 404 esconderia
+o incidente do cliente e das métricas. Não exponha detalhes internos ou dados
+sensíveis no payload de erro.
 
 ## Próximos passos
 
@@ -487,7 +512,7 @@ Logging estruturado é a base para observabilidade. Depois de dominar Serilog e 
 3. **Alertas**: Configurar alertas no Seq para situações críticas
 4. **Dashboards**: Criar dashboards customizados para monitoramento em tempo real
 
-Mas antes de sair correndo para adicionar mais ferramentas, domine o básico. Logging estruturado bem feito resolve 80% dos problemas de troubleshooting. O resto é otimização.
+Mas antes de sair correndo para adicionar mais ferramentas, domine o básico. Logging estruturado melhora a investigação, mas não substitui métricas, traces e testes. O repo não mede uma taxa de 80% de resolução de incidentes.
 
 ### Então, antes de adicionar mais complexidade, faça o básico
 

@@ -17,7 +17,7 @@ public class ViaCepService
         {
             _logger.LogInformation("Iniciando consulta de CEP {Cep}", cep);
 
-            var response = await _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/");
+            using var response = await _httpClient.GetAsync($"https://viacep.com.br/ws/{cep}/json/");
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -32,7 +32,7 @@ public class ViaCepService
                     cep,
                     (int)response.StatusCode
                 );
-                return null;
+                response.EnsureSuccessStatusCode();
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -64,7 +64,7 @@ public class ViaCepService
                 cep,
                 ex.Message
             );
-            return null;
+            throw;
         }
         catch (TaskCanceledException ex)
         {
@@ -73,7 +73,7 @@ public class ViaCepService
                 "Timeout ao consultar CEP {Cep}",
                 cep
             );
-            return null;
+            throw;
         }
         catch (JsonException ex)
         {
@@ -82,7 +82,7 @@ public class ViaCepService
                 "Erro ao deserializar resposta do CEP {Cep}",
                 cep
             );
-            return null;
+            throw;
         }
     }
 }

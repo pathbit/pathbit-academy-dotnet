@@ -18,11 +18,11 @@ public class CepController : ControllerBase
     {
         _logger.LogInformation("Requisição recebida para consulta de CEP {Cep}", cep);
 
-        // Remove caracteres não numéricos
-        var cleanCep = Regex.Replace(cep, @"[^\d]", "");
+        // Aceite dígitos ASCII e o hífen usual, sem transformar texto inválido em CEP.
+        var cleanCep = cep.Replace("-", "");
 
         // Valida formato do CEP
-        if (cleanCep.Length != 8 || !Regex.IsMatch(cleanCep, @"^\d{8}$"))
+        if (!Regex.IsMatch(cep, @"^[0-9]{5}-?[0-9]{3}$"))
         {
             _logger.LogWarning(
                 "CEP {Cep} possui formato inválido. CEP limpo: {CleanCep}",
@@ -36,7 +36,19 @@ public class CepController : ControllerBase
             });
         }
 
-        var address = await _viaCepService.GetAddressByCepAsync(cleanCep);
+        ViaCepResponse? address;
+        try
+        {
+            address = await _viaCepService.GetAddressByCepAsync(cleanCep);
+        }
+        catch (TaskCanceledException)
+        {
+            return StatusCode(504, new { error = "Timeout ao consultar ViaCEP" });
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException)
+        {
+            return StatusCode(502, new { error = "Falha ao consultar ViaCEP" });
+        }
 
         if (address == null)
         {

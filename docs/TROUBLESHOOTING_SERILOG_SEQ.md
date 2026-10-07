@@ -19,7 +19,9 @@ A solicitação HTTP para 'GET https://api.nuget.org/v3/index.json' expirou apó
 ### Solução 1: Aumentar o timeout do NuGet
 ```bash
 # Aumentar timeout para 300 segundos (5 minutos)
-dotnet nuget config set http.timeout 300
+# Não há chave http.timeout suportada por dotnet nuget config set.
+# Diagnostique DNS/proxy/certificados e use restore com log detalhado:
+dotnet restore --verbosity diagnostic
 ```
 
 ### Solução 2: Limpar cache do NuGet e tentar novamente
@@ -35,7 +37,8 @@ dotnet restore
 ### Solução 3: Usar mirror do NuGet (se disponível)
 ```bash
 # Adicionar source alternativa (exemplo)
-dotnet nuget add source https://pkgs.dev.azure.com/_packaging/feed/nuget/v3/index.json -n AzureDevOps
+# Um feed privado exige a URL real da organização/projeto e credencial.
+# Não copie uma URL fictícia como origem NuGet.
 ```
 
 ### Solução 4: Restaurar pacotes um por um
