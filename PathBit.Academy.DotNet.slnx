@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/0001_serilog_seq_logging/" />
+  <Folder Name="/0001_serilog_seq_logging/src/">
+    <Project Path="0001_serilog_seq_logging/src/ViaCepLogger.Api/ViaCepLogger.Api.csproj" />
+  </Folder>
+  <Folder Name="/0002_versionamento_api/" />
+  <Folder Name="/0002_versionamento_api/src/">
+    <Project Path="0002_versionamento_api/src/Api/Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ViaCepLogger.Tests/ViaCepLogger.Tests.csproj" />
+  </Folder>
+</Solution>
