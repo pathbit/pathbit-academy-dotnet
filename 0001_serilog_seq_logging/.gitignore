@@ -2044,3 +2044,9 @@ $RECYCLE.BIN/
 **/.docker/*
 **/bin/
 **/obj/
+
+# dotenv files
+.env
+.env.*
+!.env.example
+!.env.*.example

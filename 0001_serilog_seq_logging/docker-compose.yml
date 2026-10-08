@@ -6,13 +6,14 @@ services:
     image: datalust/seq:latest
     container_name: pb-seqlogging
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       - ACCEPT_EULA=Y
       - SEQ_FIRSTRUN_ADMINUSERNAME=${SEQ_ADMIN_USERNAME:-admin}
       - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_ADMIN_PASSWORD:-ChangeMe!123!}
     ports:
-      - "5341:80" # UI e ingestão HTTP do Seq
+      - "127.0.0.1:5341:80" # UI e ingestão HTTP do Seq
     volumes:
       - seq-data:/data
     restart: unless-stopped
@@ -28,7 +29,7 @@ services:
       - SEQ_API_KEY=${SEQ_INGESTION_API_KEY:-} # opcional se o Seq exigir API key
       # - GELF_ADDRESS=udp://0.0.0.0:12201     # default já é esse
     ports:
-      - "12201:12201/udp" # expõe a porta GELF no host
+      - "127.0.0.1:12201:12201/udp" # expõe a porta GELF no host
     restart: unless-stopped
 
   api:
@@ -49,7 +50,7 @@ services:
       - Seq__UseHttpIngestion=false
       - Seq__ApplicationName=ViaCepLogger.Api
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     logging:
       driver: gelf
       options:

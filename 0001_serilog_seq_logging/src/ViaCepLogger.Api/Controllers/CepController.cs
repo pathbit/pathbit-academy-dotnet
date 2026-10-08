@@ -14,9 +14,19 @@ public class CepController : ControllerBase
     }
 
     [HttpGet("{cep}")]
-    public async Task<IActionResult> GetAddress(string cep)
+    public async Task<IActionResult> GetAddress(string? cep)
     {
         _logger.LogInformation("Requisição recebida para consulta de CEP {Cep}", cep);
+
+        if (string.IsNullOrWhiteSpace(cep))
+        {
+            _logger.LogWarning("CEP não informado ou em branco");
+            return BadRequest(new
+            {
+                error = "Formato de CEP inválido",
+                message = "O CEP deve conter exatamente 8 dígitos numéricos"
+            });
+        }
 
         // Aceite dígitos ASCII e o hífen usual, sem transformar texto inválido em CEP.
         var cleanCep = cep.Replace("-", "");
