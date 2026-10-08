@@ -9,5 +9,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ViaCepLogger.Tests/ViaCepLogger.Tests.csproj" />
+    <Project Path="tests/ApiVersioning.Tests/ApiVersioning.Tests.csproj" />
   </Folder>
 </Solution>

@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApiVersioning(options =>
@@ -42,6 +43,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 app.Run();
 

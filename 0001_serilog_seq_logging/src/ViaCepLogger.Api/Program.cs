@@ -7,6 +7,7 @@ builder.Host.UseDefaultSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
 
 // Configurar HttpClient para ViaCepService
 builder.Services.AddHttpClient<ViaCepService>(client =>
@@ -36,6 +37,7 @@ app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"))
    .ExcludeFromDescription();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 try
