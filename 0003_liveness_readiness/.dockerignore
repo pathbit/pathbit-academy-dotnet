@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!src
+!src/HealthChecks.Api
+!src/HealthChecks.Api/*.cs
+!src/HealthChecks.Api/*.csproj
+!src/HealthChecks.Api/appsettings.json

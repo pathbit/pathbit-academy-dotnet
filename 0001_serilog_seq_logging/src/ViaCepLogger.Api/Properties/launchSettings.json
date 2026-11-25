@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
-      "applicationUrl": "http://localhost:5001;https://localhost:7001",
+      "applicationUrl": "http://localhost:5001",
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {

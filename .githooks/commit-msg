@@ -6,23 +6,9 @@ Higieniza mensagens de commit para impedir qualquer assinatura de coautoria
 com IA (Claude, Antigravity, Gemini, Anthropic, Google, OpenAI, Cursor, Copilot,
 Windsurf, Devin, Kimi, Kiro, Aider, Cline, Roo, Continue, Kilo, etc.).
 """
-import sys
 import re
-
-if len(sys.argv) < 2:
-    sys.exit(0)
-
-msg_file = sys.argv[1]
-
-try:
-    with open(msg_file, "r", encoding="utf-8") as f:
-        content = f.read()
-except Exception:
-    try:
-        with open(msg_file, "r", encoding="latin-1") as f:
-            content = f.read()
-    except Exception:
-        sys.exit(0)
+import subprocess
+import sys
 
 AI_AGENTS_REGEX = (
     r"(claude|antigravity|gemini|anthropic|openai|chatgpt|gpt|cursor|copilot|"
@@ -44,23 +30,52 @@ PROHIBITED_PATTERNS = [
     re.compile(r"^\s*Assisted-by:.*$", re.IGNORECASE),
     re.compile(rf"^\s*🤖.*{AI_AGENTS_REGEX}.*$", re.IGNORECASE),
     re.compile(rf"^\s*(generated|powered|authored)\s+by\s+.*{AI_AGENTS_REGEX}.*$", re.IGNORECASE),
+    re.compile(r"^\s*https://claude\.ai/code/session/", re.IGNORECASE),
 ]
 
-lines = content.splitlines()
-cleaned_lines = []
+def has_prohibited_signature(line):
+    return any(pattern.match(line) for pattern in PROHIBITED_PATTERNS)
 
-for line in lines:
-    if any(p.match(line) for p in PROHIBITED_PATTERNS):
-        continue
-    cleaned_lines.append(line)
+def check_history():
+    result = subprocess.run(
+        ["git", "log", "--all", "-z", "--format=%H%x00%B"],
+        check=True,
+        stdout=subprocess.PIPE,
+        encoding="utf-8",
+        errors="replace",
+    )
+    entries = result.stdout.split("\0")
+    matches = [
+        sha for sha, message in zip(entries[::2], entries[1::2])
+        if any(has_prohibited_signature(line) for line in message.splitlines())
+    ]
+    if matches:
+        print("Assinatura proibida nos commits: " + ", ".join(matches), file=sys.stderr)
+        return 1
+    print("Histórico verificado sem assinaturas proibidas.")
+    return 0
 
-while cleaned_lines and not cleaned_lines[-1].strip():
-    cleaned_lines.pop()
+def clean_message(path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        with open(path, "r", encoding="latin-1") as f:
+            content = f.read()
+    except OSError:
+        return
 
-cleaned_content = "\n".join(cleaned_lines) + "\n"
+    cleaned_lines = [line for line in content.splitlines() if not has_prohibited_signature(line)]
 
-if cleaned_content != content:
-    with open(msg_file, "w", encoding="utf-8") as f:
-        f.write(cleaned_content)
+    while cleaned_lines and not cleaned_lines[-1].strip():
+        cleaned_lines.pop()
 
-sys.exit(0)
+    cleaned_content = "\n".join(cleaned_lines) + "\n"
+    if cleaned_content != content:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(cleaned_content)
+
+if __name__ == "__main__" and len(sys.argv) > 1:
+    if sys.argv[1] == "--check-history":
+        sys.exit(check_history())
+    clean_message(sys.argv[1])

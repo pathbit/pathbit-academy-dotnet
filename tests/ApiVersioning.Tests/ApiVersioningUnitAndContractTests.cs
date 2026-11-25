@@ -16,7 +16,9 @@ public class ApiVersioningUnitAndContractTests
     public async Task CustomerController_V1_ReturnsExpectedContractAndDocumentString()
     {
         var controller = new CustomerController();
+#pragma warning disable CS0618 // A cobertura do contrato legado chama a ação deprecada diretamente.
         var actionResult = await controller.GetCustomerByIdAsync(42);
+#pragma warning restore CS0618
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         Assert.Equal(200, okResult.StatusCode);
@@ -64,7 +66,9 @@ public class ApiVersioningUnitAndContractTests
     public async Task UserController_V1_GetUsersAsync_ReturnsAllPredefinedUsers()
     {
         var controller = new UserController();
+#pragma warning disable CS0618 // A cobertura do contrato legado chama a ação deprecada diretamente.
         var actionResult = await controller.GetUsersAsync();
+#pragma warning restore CS0618
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         Assert.Equal(200, okResult.StatusCode);
@@ -92,7 +96,9 @@ public class ApiVersioningUnitAndContractTests
     public async Task UserController_V1_GetUserByIdAsync_WhenFound_ReturnsUser()
     {
         var controller = new UserController();
+#pragma warning disable CS0618 // A cobertura do contrato legado chama a ação deprecada diretamente.
         var actionResult = await controller.GetUserByIdAsync(1);
+#pragma warning restore CS0618
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         Assert.Equal(200, okResult.StatusCode);
@@ -106,7 +112,9 @@ public class ApiVersioningUnitAndContractTests
     public async Task UserController_V1_GetUserByIdAsync_WhenNotFound_ReturnsNotFound()
     {
         var controller = new UserController();
+#pragma warning disable CS0618 // A cobertura do contrato legado chama a ação deprecada diretamente.
         var actionResult = await controller.GetUserByIdAsync(999);
+#pragma warning restore CS0618
 
         var notFoundResult = Assert.IsType<NotFoundResult>(actionResult.Result);
         Assert.Equal(404, notFoundResult.StatusCode);

@@ -2,7 +2,7 @@
 
 Conteúdos técnicos sobre .NET publicados pela Pathbit
 
-## 📚 Artigos Publicados
+## 📚 Artigos e laboratórios
 
 ### [0001 - Centralizando e organizando logs no .NET com Serilog e Seq](./0001_serilog_seq_logging)
 
@@ -12,17 +12,27 @@ Conteúdos técnicos sobre .NET publicados pela Pathbit
 
 Aprenda a implementar logging estruturado em aplicações .NET usando Serilog e Seq. O artigo cobre desde a configuração básica até cenários práticos de troubleshooting, com exemplo completo de uma API que consome serviços externos e registra logs estruturados.
 
-**Tecnologias:** .NET 9.0, Serilog, Seq, Docker
+**Tecnologias:** .NET 10 LTS, Serilog, Seq, Docker
 
 ---
 
-### [0002 - Versionamento de API no ASP.NET Core](./0002_versionamento_api) (projeto de exemplo)
+### [0002 - Versionamento de API no ASP.NET Core](./0002_versionamento_api)
 
 **Categoria:** .NET / APIs
 
-Exemplo executável com duas versões da mesma API (v1 deprecada e v2), rotas por versão na URL, headers `api-supported-versions` / `api-deprecated-versions` e um documento Swagger por versão. Ainda sem artigo publicado.
+Exemplo executável com duas versões da mesma API (v1 deprecada e v2), rotas por versão na URL, headers `api-supported-versions` / `api-deprecated-versions` e um documento Swagger por versão.
 
-**Tecnologias:** .NET 9.0, Microsoft.AspNetCore.Mvc.Versioning, Swashbuckle
+**Tecnologias:** .NET 10 LTS, Microsoft.AspNetCore.Mvc.Versioning, Swashbuckle
+
+---
+
+### [0003 - Liveness e readiness no ASP.NET Core](./0003_liveness_readiness)
+
+**Categoria:** .NET / Observabilidade
+
+Laboratório com duas verificações de saúde e uma dependência HTTP que pode ser interrompida e restaurada no Docker Compose.
+
+**Tecnologias:** .NET 10 LTS, ASP.NET Core Health Checks, Docker Compose
 
 ---
 

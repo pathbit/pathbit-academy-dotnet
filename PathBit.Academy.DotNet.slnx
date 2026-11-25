@@ -7,7 +7,12 @@
   <Folder Name="/0002_versionamento_api/src/">
     <Project Path="0002_versionamento_api/src/Api/Api.csproj" />
   </Folder>
+  <Folder Name="/0003_liveness_readiness/" />
+  <Folder Name="/0003_liveness_readiness/src/">
+    <Project Path="0003_liveness_readiness/src/HealthChecks.Api/HealthChecks.Api.csproj" />
+  </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/HealthChecks.Tests/HealthChecks.Tests.csproj" />
     <Project Path="tests/ViaCepLogger.Tests/ViaCepLogger.Tests.csproj" />
     <Project Path="tests/ApiVersioning.Tests/ApiVersioning.Tests.csproj" />
   </Folder>

@@ -197,7 +197,7 @@ options.EnrichDiagnosticContext = (ctx, httpContext) =>
 }
 ```
 
-Em ambientes containerizados sobrescrevemos com variáveis (`Seq__UseAgentBridge=true`, `Seq__UseHttpIngestion=false`) para priorizar a saída compacta no stdout. A variável `SEQ_REQUIRE_INGESTION_API_KEY` do antigo exemplo não configura por si só o Seq: ela não era usada pelo compose. Defina a exigência no painel do Seq, crie uma chave de ingestão e configure `Seq__ApiKey` ou `SEQ_INGESTION_API_KEY` no sink/sidecar.
+Em ambientes containerizados sobrescrevemos com variáveis (`Seq__UseAgentBridge=true`, `Seq__UseHttpIngestion=false`) para priorizar a saída compacta no stdout. Quando a ingestão autenticada estiver habilitada no Seq, crie uma chave de ingestão e use `Seq__ApiKey` no sink HTTP ou `SEQ_INGESTION_API_KEY` no serviço GELF.
 
 #### Pacotes que fazem a mágica acontecer
 
@@ -374,11 +374,11 @@ var useHttpIngestion = isRunningInContainer
 
 Quando `UseAgentBridge` está ativo, os logs vão para o `stdout` em formato compacto JSON (`RenderedCompactJsonFormatter`) para que um driver externo/coletor processe o fluxo. Ao detectar que está dentro de um container, o código assume `UseAgentBridge=true` e `UseHttpIngestion=false` a menos que você sobrescreva explicitamente. Fora do container, o padrão se inverte (HTTP ativo, bridge desativado). Se quiser forçar qualquer combinação, basta definir as flags via variável de ambiente (`Seq__UseAgentBridge` / `Seq__UseHttpIngestion`).
 
-No compose de exemplo optamos pelo driver GELF, portanto mantemos o bridge e desativamos o sink HTTP. Como o Seq está configurado para não exigir chave (`SEQ_REQUIRE_INGESTION_API_KEY=false`), `Seq__ApiKey` permanece em branco.
+O Compose mantém o bridge e desativa o sink HTTP. O GELF e a API aguardam o `/health` do Seq, e a API também aguarda a inicialização do GELF.
 
 Para reforçar a identificação da origem, adicionamos `Seq:ApplicationName` nas configurações — o `SerilogExtensions` enriquece cada evento com a propriedade `Application`, então no Seq fica claro se veio da API, de um worker ou de outro serviço.
 
-Se decidir exigir API key, gere uma chave no Seq e atribua em `Seq__ApiKey`; o driver GELF continuará funcionando porque ignora esse valor.
+Se exigir uma chave no Seq, defina `SEQ_INGESTION_API_KEY` para que o Compose a encaminhe ao GELF. O sink HTTP usa `Seq__ApiKey` quando habilitado.
 
 O serviço da API ficou assim no `docker-compose.yml`:
 
@@ -386,18 +386,24 @@ O serviço da API ficou assim no `docker-compose.yml`:
   seq-gelf:
     image: datalust/seq-input-gelf:latest
     depends_on:
-      - seq
+      seq:
+        condition: service_healthy
     environment:
       - SEQ_ADDRESS=http://seq:80
       - SEQ_API_KEY=${SEQ_INGESTION_API_KEY:-}
     ports:
-      - "12201:12201/udp"
+      - "127.0.0.1:12201:12201/udp"
     restart: unless-stopped
 
   api:
     build:
       context: .
       dockerfile: src/ViaCepLogger.Api/Dockerfile
+    depends_on:
+      seq:
+        condition: service_healthy
+      seq-gelf:
+        condition: service_started
     environment:
       - Seq__UseAgentBridge=true
       - Seq__UseHttpIngestion=false
@@ -406,7 +412,7 @@ O serviço da API ficou assim no `docker-compose.yml`:
       driver: gelf
       options:
         gelf-address: udp://127.0.0.1:12201
-        tag: via-cep-api
+        tag: viaceploggerapi
 ```
 
 O `DOTNET_RUNNING_IN_CONTAINER` fica `true` nesse cenário, e as variáveis reforçam o modo bridge para alimentar o driver GELF.

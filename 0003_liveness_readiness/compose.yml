@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    environment:
+      Dependency__HealthUrl: http://dependency/
+    ports:
+      - "127.0.0.1:${HEALTH_LAB_PORT:-19703}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  dependency:
+    image: nginx:1.28-alpine

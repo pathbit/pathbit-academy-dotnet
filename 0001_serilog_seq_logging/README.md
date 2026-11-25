@@ -5,6 +5,8 @@
 API .NET que demonstra **logging estruturado** usando **Serilog** e **Seq**.
 A aplicação consome a API pública do ViaCEP para consultar endereços por CEP, registrando logs estruturados de todas as operações.
 
+[Leia o artigo](article/ARTICLE.md)
+
 ### 🎯 Funcionalidades
 
 - ✅ Consulta de CEP via API ViaCEP
@@ -20,7 +22,7 @@ A aplicação consome a API pública do ViaCEP para consultar endereços por CEP
 
 ### 📋 Pré-requisitos
 
-- .NET 9.0 SDK ou superior
+- SDK do .NET 10 para executar a API fora do Docker
 - Docker e Docker Compose (para o Seq)
 - VS Code com extensão REST Client (opcional, para usar arquivos .http)
 
@@ -32,7 +34,7 @@ cd 0001_serilog_seq_logging
 
 # Subir Seq + sidecar GELF + API
 cp .env.example .env  # edite usuário/senha antes de subir
-docker compose up -d seq seq-gelf api
+docker compose up -d --build --wait
 
 # Conferir os serviços
 docker compose ps
@@ -43,7 +45,7 @@ docker compose ps
 
 > **Login no Seq:** usuário e senha vêm do `.env` (`SEQ_ADMIN_USERNAME` / `SEQ_ADMIN_PASSWORD`). No primeiro acesso o Seq **exige trocar a senha**; isso é comportamento do Seq, não erro. As credenciais só valem na criação do volume `seq-data`: alterar o `.env` não redefine um usuário existente. Use a administração do Seq; `docker compose down -v` apaga todos os logs e só deve ser usado após backup, em uma demo descartável.
 
-Depois de gerar requisições, confira no Seq se os eventos chegam com o `tag` `viaceploggerapi`. Se mudar variáveis/ports, recrie os containers (`docker compose down && docker compose up -d seq seq-gelf api`).
+Depois de gerar requisições, confira no Seq se os eventos chegam com o `tag` `viaceploggerapi`. Se mudar variáveis/ports, recrie os containers (`docker compose down && docker compose up -d --build --wait`).
 
 > Dica: ao executar `dotnet run`, o Serilog ativa o sink HTTP automaticamente (`Seq__UseHttpIngestion=true`), então o sidecar só é necessário dentro de containers.
 
@@ -58,14 +60,13 @@ Escolha esta opção **ou** a API do compose. A API em container usa
 dotnet restore src/ViaCepLogger.Api/ViaCepLogger.Api.csproj
 
 # Executar a aplicação
-dotnet run --project src/ViaCepLogger.Api/ViaCepLogger.Api.csproj
+dotnet run --project src/ViaCepLogger.Api/ViaCepLogger.Api.csproj --launch-profile http
 ```
 
 **API estará disponível em:**
 
-- 🌐 **HTTPS:** <https://localhost:7001>
-- 🌐 **HTTP:** <http://localhost:5001>
-- 📖 **Swagger:** <https://localhost:7001/> (redirecionamento automático)
+- **API e Swagger:** <http://localhost:5001/>
+- **HTTPS opcional:** <https://localhost:7001/> com `--launch-profile https` e um certificado de desenvolvimento.
 
 ---
 
@@ -95,7 +96,7 @@ curl http://localhost:5001/api/cep/abc123
 
 ### 🎯 Opção 3: Swagger UI
 
-1. Acesse: <https://localhost:7001/>
+1. Abra <http://localhost:5001/> para a API local ou <http://localhost:8080/> para o Compose.
 2. Teste os endpoints diretamente na interface
 
 ---
@@ -122,8 +123,8 @@ Logs também são exibidos no console com formatação colorida e estruturada.
 
 | Tecnologia | Versão | Propósito |
 |------------|--------|-----------|
-| .NET | 9.0 | Framework principal |
-| Serilog.AspNetCore / Serilog.Sinks.Seq | 9.0.0 | Logging estruturado |
+| .NET | 10 LTS | Framework principal |
+| Serilog.AspNetCore / Serilog.Sinks.Seq | 10.0.0 / 9.0.0 | Logging estruturado |
 | Seq | - | Dashboard de logs |
 | Swagger/OpenAPI | - | Documentação da API |
 | ViaCEP API | - | Fonte de dados de CEP |
@@ -163,7 +164,8 @@ Logs também são exibidos no console com formatação colorida e estruturada.
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | `GET` | `/` | Redireciona para Swagger UI |
-| `GET` | `/api/cep/health` | Health check da aplicação |
+| `GET` | `/health` | Verificação de saúde do ASP.NET Core |
+| `GET` | `/api/cep/health` | Status exposto pelo controller de CEP |
 | `GET` | `/api/cep/{cep}` | Consulta CEP via ViaCEP (400/404/502/504 conforme a causa) |
 
 ### 📝 Exemplos de Resposta

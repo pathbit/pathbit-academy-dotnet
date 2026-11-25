@@ -4,17 +4,17 @@ Projeto de exemplo que mostra como manter duas versões de uma API no mesmo
 serviço: a **v1**, marcada como deprecada, e a **v2**, que traz mudanças que
 quebram contrato.
 
-> Este exemplo ainda não tem artigo publicado. O código é a referência.
+[Leia o artigo](article/ARTICLE.md)
 
 ## Pré-requisitos
 
-- .NET 9.0 SDK: o `global.json` pede o 9.0.306 e, pela regra padrão (`latestPatch`), aceita patches mais novos da faixa 9.0.3xx
+- SDK do .NET 10. O `global.json` da solução seleciona a faixa instalada mais recente do SDK 10.0.
 
 ## Como executar
 
 ```bash
 cd 0002_versionamento_api
-dotnet run --project src/Api
+dotnet run --project src/Api --launch-profile http
 ```
 
 - API: <http://localhost:7000>
@@ -35,7 +35,7 @@ Os exemplos prontos estão em [`src/Api/Api.http`](src/Api/Api.http).
 
 ## O que observar
 
-Toda resposta informa as versões disponíveis nos headers (`ReportApiVersions = true`):
+As respostas das rotas versionadas informam as versões disponíveis nos headers (`ReportApiVersions = true`):
 
 ```http
 HTTP/1.1 200 OK
@@ -52,7 +52,7 @@ api-deprecated-versions: 1.0
 ## Nota sobre a biblioteca
 
 O projeto usa `Microsoft.AspNetCore.Mvc.Versioning` 5.1.0, que funciona no
-.NET 9 mas não recebe mais atualizações. Em projetos novos, use o sucessor
+.NET 10 e preserva os contratos deste exemplo. Em projetos novos, use o sucessor
 `Asp.Versioning.Mvc` (mesmos conceitos, namespace `Asp.Versioning`).
 
 ---

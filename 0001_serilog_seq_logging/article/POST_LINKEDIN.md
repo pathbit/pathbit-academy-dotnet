@@ -29,7 +29,7 @@ Stack completa em Docker Compose subindo o dashboard do Seq na porta 5341. Visua
 4. Resiliência de Ingestão:
 Suporte tanto para sink HTTP direto durante o desenvolvimento local (`dotnet run`) quanto via driver de logs em containers.
 
-Disponibilizamos a solução completa em C# (.NET 9), manifesto Docker Compose, arquivo `.http` para testar no VS Code e guia completo de troubleshooting:
+Disponibilizamos a solução completa em C# (.NET 10 LTS), manifesto Docker Compose, arquivo `.http` para testar no VS Code e guia completo de troubleshooting:
 
 🔗 Repositório oficial: https://github.com/pathbit/pathbit-academy-dotnet
 📖 Módulo: 0001_serilog_seq_logging

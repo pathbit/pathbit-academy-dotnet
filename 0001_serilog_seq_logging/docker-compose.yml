@@ -16,6 +16,12 @@ services:
       - "127.0.0.1:5341:80" # UI e ingestão HTTP do Seq
     volumes:
       - seq-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "--max-time", "2", "http://127.0.0.1/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
     restart: unless-stopped
 
   # Entrada GELF para Docker -> Seq (recomendado pela Datalust)
@@ -23,7 +29,8 @@ services:
     image: datalust/seq-input-gelf:latest
     container_name: pb-seq-gelf
     depends_on:
-      - seq
+      seq:
+        condition: service_healthy
     environment:
       - SEQ_ADDRESS=http://seq:80 # encaminha para o Seq via HTTP
       - SEQ_API_KEY=${SEQ_INGESTION_API_KEY:-} # opcional se o Seq exigir API key
@@ -38,8 +45,10 @@ services:
       dockerfile: src/ViaCepLogger.Api/Dockerfile
     container_name: pb-viaceploggerapi
     depends_on:
-      - seq
-      - seq-gelf
+      seq:
+        condition: service_healthy
+      seq-gelf:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       # Se você também quiser enviar por HTTP com Serilog/Sinks:

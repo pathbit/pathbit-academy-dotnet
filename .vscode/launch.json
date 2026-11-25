@@ -1,34 +1,40 @@
 {
     "version": "0.2.0",
-    "configurations":
-    [
+    "configurations": [
         {
-            "name": ".NET Launch (web)",
+            "name": "0001 Logs com Serilog e Seq",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "Build Path.Infobase.WebHost",
-            "program": "${workspaceFolder}/src/WebHost/bin/Debug/net10.0/Path.Infobase.WebHost.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/WebHost",
-            "console": "internalConsole",
-            "justMyCode": true,
-            "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": false
-            },
-            "suppressJITOptimizations": true,
-            "suppressMultipleSessionWarning": true,
-            "expressionEvaluationOptions": {
-                "expandMultiLineLiterals": true,
-                "expandStringLiterals": true
-            },
-            "enableStepFiltering": false,
-            "symbolOptions": {
-                "searchMicrosoftSymbolServer": false
-            },
-            "checkForDevCert": false,
-            "logging": {
-                "moduleLoad": false
+            "preLaunchTask": "Build PathBit Academy .NET",
+            "program": "${workspaceFolder}/0001_serilog_seq_logging/src/ViaCepLogger.Api/bin/Debug/net10.0/ViaCepLogger.Api.dll",
+            "cwd": "${workspaceFolder}/0001_serilog_seq_logging/src/ViaCepLogger.Api",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5001"
+            }
+        },
+        {
+            "name": "0002 Versionamento de API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build PathBit Academy .NET",
+            "program": "${workspaceFolder}/0002_versionamento_api/src/Api/bin/Debug/net10.0/Api.dll",
+            "cwd": "${workspaceFolder}/0002_versionamento_api/src/Api",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:7000"
+            }
+        },
+        {
+            "name": "0003 Liveness e readiness",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build PathBit Academy .NET",
+            "program": "${workspaceFolder}/0003_liveness_readiness/src/HealthChecks.Api/bin/Debug/net10.0/HealthChecks.Api.dll",
+            "cwd": "${workspaceFolder}/0003_liveness_readiness/src/HealthChecks.Api",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:19703"
             }
         },
         {
