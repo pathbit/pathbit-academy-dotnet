@@ -11,9 +11,24 @@
   <Folder Name="/0003_liveness_readiness/src/">
     <Project Path="0003_liveness_readiness/src/HealthChecks.Api/HealthChecks.Api.csproj" />
   </Folder>
+  <Folder Name="/0004_problem_details/" />
+  <Folder Name="/0004_problem_details/src/">
+    <Project Path="0004_problem_details/src/ProblemDetails.Api/ProblemDetails.Api.csproj" />
+  </Folder>
+  <Folder Name="/0005_filas_limitadas/" />
+  <Folder Name="/0005_filas_limitadas/src/">
+    <Project Path="0005_filas_limitadas/src/BoundedJobs.Api/BoundedJobs.Api.csproj" />
+  </Folder>
+  <Folder Name="/0006_output_cache/" />
+  <Folder Name="/0006_output_cache/src/">
+    <Project Path="0006_output_cache/src/CatalogCache.Api/CatalogCache.Api.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HealthChecks.Tests/HealthChecks.Tests.csproj" />
     <Project Path="tests/ViaCepLogger.Tests/ViaCepLogger.Tests.csproj" />
     <Project Path="tests/ApiVersioning.Tests/ApiVersioning.Tests.csproj" />
+    <Project Path="tests/ProblemDetails.Tests/ProblemDetails.Tests.csproj" />
+    <Project Path="tests/BoundedJobs.Tests/BoundedJobs.Tests.csproj" />
+    <Project Path="tests/CatalogCache.Tests/CatalogCache.Tests.csproj" />
   </Folder>
 </Solution>
