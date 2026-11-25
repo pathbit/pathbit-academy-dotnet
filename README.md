@@ -53,14 +53,18 @@ Cada artigo possui sua própria pasta com a seguinte estrutura:
 └── src/                  # Código fonte completo
 ```
 
-## 🤝 Contribuindo
-
-Encontrou algum erro ou tem sugestões? Abra uma issue ou envie um pull request!
-
 ## 📧 Contato
 
-- **Website:** [pathbit.com](https://pathbit.com)
+- **Website:** [Site da Pathbit](https://pathbit.co/)
 - **LinkedIn:** [Pathbit](https://linkedin.com/company/pathbit)
+
+---
+
+## Contribuições e proteção de branches
+
+Envie mudanças para `master` por pull request. Execute as verificações aplicáveis ao conteúdo ou ao laboratório antes de pedir revisão. Para dúvidas, correções ou sugestões, abra uma [issue](https://github.com/pathbit/pathbit-academy-dotnet/issues).
+
+---
 
 ## 📄 Licença
 
@@ -68,4 +72,4 @@ Distribuído sob a **Licença MIT**. O texto completo está em [LICENSE](./LICEN
 
 ---
 
-**Desenvolvido com ❤️ pela [Pathbit](https://pathbit.co)**
+Developed with ❤️ by [Pathbit](https://pathbit.co/)
