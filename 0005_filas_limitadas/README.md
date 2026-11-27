@@ -1,10 +1,8 @@
 # Filas limitadas com Channels no ASP.NET Core
 
-[Português (Brasil)](README.md) · [English](README.en.md) · [Español](README.es.md)
-
 Uma API enfileira tarefas simuladas em memória e sinaliza quando a capacidade se esgota. O laboratório funciona em um processo local sem broker, banco de dados ou credenciais.
 
-[Leia o artigo](article/ARTICLE.md) · [Catálogo .NET](../README.md)
+[Leia o artigo](article/ARTICLE.md) · [Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md) · [Catálogo .NET](../README.md)
 
 ## Pré-requisitos
 
@@ -21,10 +19,13 @@ dotnet run --project src/BoundedJobs.Api --no-launch-profile -- --urls http://12
 
 ## Sature a fila e veja a recuperação
 
-Em outro terminal, use um shell compatível com Bash para enviar seis requisições concorrentes. Com uma tarefa em execução e duas aguardando, a pressão produz respostas `503` com `Retry-After: 1`, além de respostas `202` com o `id` aceito. Confira os IDs concluídos no log do servidor. O número de `503` pode variar de acordo com o escalonamento local.
+Em outro terminal, use Bash para enviar uma tarefa inicial e, logo depois, outras cinco em paralelo. Com uma tarefa em execução e duas aguardando, a pressão produz respostas `503` com `Retry-After: 1`, além de respostas `202` com o `id` aceito. Confira os IDs concluídos no log do servidor. O número de `503` pode variar de acordo com o escalonamento local.
 
 ```bash
-for ((request=0; request<6; request++)); do
+curl -sS -w ' %{http_code}\n' http://127.0.0.1:19805/jobs \
+  -H 'Content-Type: application/json' -d '{"units":5}'
+sleep 0.15
+for ((request=0; request<5; request++)); do
   (
     response=$(curl -sS -w ' %{http_code}' http://127.0.0.1:19805/jobs \
       -H 'Content-Type: application/json' -d '{"units":5}')
@@ -52,7 +53,5 @@ As verificações usam um processador controlado para ocupar a fila sem depender
 ```bash
 dotnet test ../tests/BoundedJobs.Tests
 ```
-
-[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

@@ -6,7 +6,7 @@ Se você ainda está usando `Console.WriteLine` para debugar sua aplicação .NE
 
 Logging estruturado não é novidade, mas a quantidade de projetos que ainda fazem isso errado é impressionante. E quando digo errado, não é só sobre não ter logs, é sobre ter logs que não servem para nada quando você realmente precisa deles.
 
-> Vale conferir este panorama sobre logging estruturado na prática: [Structured Logging for .NET Developers](https://www.hanselman.com/blog/structured-logging-in-aspnet-core-with-serilog-and-seq).
+> Vale conferir este panorama sobre logging estruturado na prática: [Logging estruturado com Serilog e Seq na documentação da Datalust](https://datalust.co/docs/using-serilog).
 
 ## O problema que ninguém quer admitir
 

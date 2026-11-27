@@ -4,7 +4,7 @@ Projeto de exemplo que mostra como manter duas versões de uma API no mesmo
 serviço: a **v1**, marcada como deprecada, e a **v2**, que traz mudanças que
 quebram contrato.
 
-[Leia o artigo](article/ARTICLE.md)
+[Leia o artigo](article/ARTICLE.md) · [Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
 
 ## Pré-requisitos
 
@@ -19,6 +19,14 @@ dotnet run --project src/Api --launch-profile http
 
 - API: <http://localhost:7000>
 - Swagger UI (ambiente Development): <http://localhost:7000/swagger>, com um documento por versão (`V1` e `V2`)
+
+Se a porta `7000` estiver ocupada, execute na pasta do laboratório com a porta alternativa usada nas capturas.
+
+```bash
+DOTNET_ENVIRONMENT=Development dotnet run --project src/Api --no-launch-profile -- --urls http://127.0.0.1:17002
+```
+
+Use `http://127.0.0.1:17002` também nos comandos HTTP e no Swagger.
 
 ## Endpoints
 

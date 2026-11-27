@@ -1,10 +1,8 @@
 # Output caching com invalidação por tag no ASP.NET Core
 
-[Português (Brasil)](README.md) · [English](README.en.md) · [Español](README.es.md)
-
 Uma API de catálogo reutiliza respostas HTTP e atualiza somente as representações afetadas quando o preço muda. O laboratório usa o cache em memória do ASP.NET Core e não precisa de credenciais.
 
-[Leia o artigo](article/ARTICLE.md) · [Catálogo .NET](../README.md)
+[Leia o artigo](article/ARTICLE.md) · [Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md) · [Catálogo .NET](../README.md)
 
 ## Pré-requisitos
 
@@ -46,7 +44,5 @@ Os testes verificam as variantes de consulta, a invalidação seletiva e a separ
 ```bash
 dotnet test ../tests/CatalogCache.Tests
 ```
-
-[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

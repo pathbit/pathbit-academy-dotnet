@@ -17,7 +17,7 @@ O Serilog preserva os valores originais como objetos JSON tipados. E quando envi
 
 🏗️ A arquitetura implementada no módulo 0001 do Pathbit Academy .NET:
 
-1. ASP.NET Core 9.0 + Serilog:
+1. ASP.NET Core no .NET 10 + Serilog:
 Configuração moderna e desacoplada em métodos de extensão (`SerilogExtensions`), mantendo o `Program.cs` limpo e focado no pipeline da aplicação.
 
 2. Enriquecimento Automático (Context Enrichment):
@@ -33,5 +33,7 @@ Disponibilizamos a solução completa em C# (.NET 10 LTS), manifesto Docker Comp
 
 🔗 Repositório oficial: https://github.com/pathbit/pathbit-academy-dotnet
 📖 Módulo: 0001_serilog_seq_logging
+
+![Consulta a logs estruturados e filtro no Seq](../assets/03.png)
 
 #DotNet #CSharp #Serilog #Seq #Observabilidade #ASPNETCore #DevOps #EngenhariaDeSoftware #PathbitAcademy

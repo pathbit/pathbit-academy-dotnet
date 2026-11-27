@@ -26,9 +26,17 @@ curl -i http://localhost:7000/api/v3/users
 
 As duas primeiras respostas são `200 OK`. A v1 informa o documento como `"123.456.789-00"`, enquanto a v2 o representa como `12345678900`. A consulta à v3 retorna `400` com `UnsupportedApiVersion` nesta implementação. Em rotas versionadas, `ReportApiVersions` expõe a v2 em `api-supported-versions` e a v1 em `api-deprecated-versions`.
 
+Use os comandos do [guia](../README.md) para reproduzir o exemplo. Observe os cabeçalhos de versionamento e o tipo do campo do documento.
+
+![Terminal com duas respostas 200, tipos distintos para document e o erro UnsupportedApiVersion da v3](../assets/01_contratos_v1_v2.png)
+
 ## Publique uma descrição por versão
 
 Abra o [Swagger local](http://localhost:7000/swagger) em ambiente `Development` e alterne entre `V1` e `V2`. `AddVersionedApiExplorer` agrupa as ações por versão e substitui o parâmetro na URL. `ConfigureSwaggerOptions` registra um documento para cada grupo. O documento correspondente mostra a rota de usuário por id e o tipo de `document` daquele contrato.
+
+Consulte cada arquivo OpenAPI para comparar as rotas de usuário e os esquemas de cada contrato.
+
+![Terminal com os documentos Swagger da v1 e da v2, caminhos diferentes para busca por id e document como string e integer](../assets/02_swagger_por_versao.png)
 
 A depreciação mantém a v1 acessível e sinaliza a migração. Para planejar a remoção, informe aos clientes quais operações mudam, publique um prazo e verifique quem ainda consome a v1 antes de desligá-la.
 

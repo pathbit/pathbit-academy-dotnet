@@ -1,10 +1,8 @@
 # Contratos de erro HTTP com Problem Details
 
-[Português (Brasil)](README.md) · [English](README.en.md) · [Español](README.es.md)
-
 Uma API de prévia de reservas devolve erros de validação, ausência de produto e falta de estoque no formato da RFC 9457. O laboratório usa dados em memória e não precisa de credenciais.
 
-[Leia o artigo](article/ARTICLE.md) · [Catálogo .NET](../README.md)
+[Leia o artigo](article/ARTICLE.md) · [Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md) · [Catálogo .NET](../README.md)
 
 ## Pré-requisitos
 
@@ -44,7 +42,5 @@ Na pasta deste laboratório, rode o comando abaixo. Os testes sobem o servidor e
 ```bash
 dotnet test ../tests/ProblemDetails.Tests
 ```
-
-[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)
