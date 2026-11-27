@@ -47,4 +47,6 @@ The tests cover query variants, selective eviction, and revision isolation witho
 dotnet test ../tests/CatalogCache.Tests
 ```
 
+[LinkedIn article](article/ARTICLE_LINKEDIN.en.md) · [LinkedIn post](article/POST_LINKEDIN.en.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

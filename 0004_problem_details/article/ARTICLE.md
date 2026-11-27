@@ -1,41 +1,50 @@
-# Contratos de erro HTTP com Problem Details
+# Como devolver erros que um cliente consegue tratar com Problem Details
 
-[Português (Brasil)](ARTICLE.md) · [English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
+[English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
 
-Uma aplicação cliente precisa escolher a próxima ação quando uma reserva falha. Pode pedir a correção de um campo, avisar que o produto sumiu ou sugerir uma quantidade menor. A API do laboratório devolve esses resultados com o mesmo formato JSON e um identificador estável por problema. O cliente pode tomar a decisão sem analisar o texto destinado a pessoas.
+Na tela de reserva, o produto ainda existe e o usuário pede três teclados. A API só tem dois. Se o cliente recebe apenas «algo deu errado», ele não consegue saber se vale corrigir o formulário ou esperar o estoque. Um contrato Problem Details permite distinguir um conflito de estoque de erro de validação e de falha inesperada.
 
-## Modele o contrato antes de implementar
+## Use o código HTTP para a classe e `type` para a decisão
 
-O status HTTP comunica a classe de resultado. O campo `type` identifica um problema específico dentro dessa classe. Use `title` e `detail`, quando houver, para exibição e diagnóstico humano. Os campos adicionais também fazem parte do contrato se o cliente depender deles.
-
-| Entrada na prévia | Status | Tipo ou resultado |
+| Requisição à prévia | HTTP | O que o cliente pode fazer |
 | --- | --- | --- |
-| `keyboard`, quantidade 2 | `200` | Prévia JSON com estoque disponível |
-| SKU vazio ou quantidade fora de 1–5 | `400` | `urn:pathbit:problem:invalid-reservation` e `errors` por campo |
-| `mouse`, quantidade 1 | `404` | `urn:pathbit:problem:product-not-found` |
-| `keyboard`, quantidade 3 | `409` | `urn:pathbit:problem:insufficient-stock` e `availableQuantity` |
+| `keyboard` com quantidade 2 | `200` | Exibir a prévia |
+| SKU vazio ou quantidade fora de 1 a 5 | `400` | Ler `errors` e marcar os campos |
+| `mouse` com quantidade 1 | `404` | Informar produto indisponível |
+| `keyboard` com quantidade 3 | `409` | Ler `availableQuantity` e oferecer até duas unidades |
 
-O laboratório tem somente o SKU `keyboard`, com duas unidades. A prévia consulta essa situação sem gravar uma reserva. Um pedido de três unidades é válido no esquema, mas conflita com o estoque atual. O cliente pode oferecer duas unidades ao ler `availableQuantity`.
+Na resposta de conflito, o identificador é `urn:pathbit:problem:insufficient-stock`. A equipe pode traduzir `title` e `detail` sem mudar o campo que orienta a interface. Os dados do formulário seguem nas extensões `errors` e `availableQuantity` quando aplicáveis. O contrato vale para uma prévia. Ele não cria nem congela uma reserva.
 
-## Separe as três origens dos erros
+## Monte o pipeline em torno do mesmo formato
 
-O [endpoint](../src/ProblemDetails.Api/Program.cs) usa `Results.ValidationProblem` para erros por campo e `Results.Problem` para resultados esperados de negócio. `AddProblemDetails` registra o serviço de escrita e acrescenta `traceId` à resposta. O pipeline usa dois middlewares antes das rotas.
+O [endpoint](../src/ProblemDetails.Api/Program.cs) usa `Results.ValidationProblem` para erros por campo e `Results.Problem` para resultados de negócio. `AddProblemDetails` registra o escritor e personaliza `traceId`. Coloque `UseExceptionHandler` e `UseStatusCodePages` antes das rotas. O primeiro trata exceções inesperadas. O segundo pode completar respostas vazias como um `404` de rota inexistente.
 
-- `UseExceptionHandler` converte uma exceção inesperada em `500` e deixa o diagnóstico técnico nos logs.
-- `UseStatusCodePages` pode preencher respostas de erro sem corpo, como o `404` de uma rota inexistente. Um corpo já preenchido pelo endpoint é mantido.
+```csharp
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+```
 
-O exemplo usa `application/problem+json` para as respostas negociadas como JSON. Se o cliente restringir o cabeçalho `Accept` a um formato sem escritor, os middlewares podem usar a resposta alternativa. Integrações devem declarar um tipo de mídia compatível e conferi-lo antes de processar o corpo.
+O JSON de problemas usa `application/problem+json`. Em respostas produzidas por middleware, a negociação depende do `Accept` e dos escritores registrados. Confira o cabeçalho de resposta antes de analisar o corpo. Para uma falha inesperada, investigue o `traceId` no servidor e mantenha a mensagem da exceção nos logs.
 
-## Correlacione sem expor dados internos
+```csharp
+if (request.Quantity > availableQuantity)
+{
+    return Results.Problem(
+        statusCode: StatusCodes.Status409Conflict,
+        type: "urn:pathbit:problem:insufficient-stock",
+        title: "The requested quantity exceeds available stock.",
+        extensions: new Dictionary<string, object?> { ["availableQuantity"] = availableQuantity });
+}
+```
 
-Chame `/operations/fail` para observar um `500` com `traceId`. O identificador ajuda a cruzar a resposta com a atividade registrada no servidor. O corpo não envia o tipo ou a mensagem da exceção. A rota existe para reproduzir a falha no laboratório local.
+## Faça a leitura como um consumidor da API
 
-Para erros esperados, mantenha os identificadores `urn:pathbit:problem:...` estáveis. Uma mudança de idioma ou texto de apresentação não precisa mudar o tipo. Adicione extensões com nomes e valores documentados. Separe dados de diagnóstico interno dos campos que o consumidor realmente usa.
+Execute as chamadas do [início rápido](../README.md). Compare primeiro os dois casos de `400` e `409`. Depois chame `/operations/fail` e verifique que a rota devolve `500` com correlação. Os [testes de contrato](../../tests/ProblemDetails.Tests/ProblemContracts.cs) também exercitam JSON malformado e rota inexistente.
 
-## Reproduza e verifique
+Se estiver integrando uma API versionada, trate identificadores e campos usados pelo cliente como parte do [contrato de versão](../../0002_versionamento_api/article/ARTICLE.md). O [próximo laboratório](../../0005_filas_limitadas/article/ARTICLE.md) dá outro exemplo de decisão do consumidor, a resposta de uma fila temporariamente cheia.
 
-Siga o [começo rápido](../README.md) e compare as respostas com a tabela. Os [testes de contrato](../../tests/ProblemDetails.Tests/ProblemContracts.cs) conferem o tipo de mídia, os códigos HTTP, os campos de validação, a correlação e a resposta de exceção. Eles também exercitam JSON malformado e uma rota que não existe.
+[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) · [Tratamento de erros em APIs ASP.NET Core](https://learn.microsoft.com/pt-br/aspnet/core/fundamentals/error-handling-api?view=aspnetcore-10.0)
 
-[Especificação RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) · [Tratamento de erros em APIs ASP.NET Core](https://learn.microsoft.com/pt-br/aspnet/core/fundamentals/error-handling-api?view=aspnetcore-10.0)
+---
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

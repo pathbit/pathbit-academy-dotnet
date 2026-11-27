@@ -1,38 +1,50 @@
-# Output caching com invalidação por tag no ASP.NET Core
+# Como reutilizar respostas de catálogo com Output Caching no ASP.NET Core
 
-[Português (Brasil)](ARTICLE.md) · [English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
+[English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
 
-Requisições repetidas ao catálogo podem servir a mesma resposta HTTP sem chamar o código da rota. Uma alteração de preço deve atualizar as representações do catálogo que usam esse preço. No laboratório, uma política com tag define esse grupo e uma revisão no identificador da entrada evita que uma leitura nova recupere dados de uma revisão anterior.
+Uma página de catálogo pede a versão compacta de um produto muitas vezes. Outra página quer os detalhes. Ambas exibem o preço e precisam mudar depois que o lojista o salva. O cache de saída do ASP.NET Core pode reutilizar uma resposta HTTP completa. O desafio aqui é escolher quem compartilha a resposta e quais entradas devem sair quando o preço muda.
 
-## Identifique o que muda a representação
+## Escreva as dimensões da chave
 
-A [política `catalog`](../src/CatalogCache.Api/Program.cs) usa `SetVaryByQuery("view")` porque a consulta `view` altera o corpo de `GET /catalog`. As variantes `brief` e `full` têm entradas próprias. A rota `/catalog/summary` tem outro caminho e usa a mesma política. O middleware só guarda respostas elegíveis, como as respostas públicas `200` deste exemplo. A resposta `400` para uma variante inválida não é armazenada.
-
-O contador `generation` é incrementado quando o handler produz uma resposta. Duas leituras da mesma chave normalmente devolvem a mesma geração até a expiração ou invalidação. Respostas a chaves diferentes podem ter gerações diferentes mesmo que tenham a mesma revisão do catálogo.
-
-| Requisição | Dimensão observada | Tag |
+| Rota | O que varia | Tag |
 | --- | --- | --- |
-| `GET /catalog?view=brief` | Caminho, `brief`, revisão atual | `catalog` |
-| `GET /catalog?view=full` | Caminho, `full`, revisão atual | `catalog` |
-| `GET /catalog/summary` | Caminho e revisão atual | `catalog` |
-| `GET /about` | Caminho independente | `about` |
+| `/catalog?view=brief` | Caminho, `view`, revisão do catálogo | `catalog` |
+| `/catalog?view=full` | Caminho, `view`, revisão do catálogo | `catalog` |
+| `/catalog/summary` | Caminho e revisão do catálogo | `catalog` |
+| `/about` | Caminho próprio | `about` |
 
-## Evite reaproveitar dados de uma revisão antiga
+No [código da política](../src/CatalogCache.Api/Program.cs), `SetVaryByQuery("view")` separa os corpos curto e completo. `VaryByValue` leva em conta a revisão. O middleware guarda as respostas públicas elegíveis. No exemplo, um `400` de `view` inválido fica de fora.
 
-A alteração publica um novo [produto imutável](../src/CatalogCache.Api/Catalog.cs) com revisão incrementada. Antes de consultar o cache, cada requisição captura uma referência à revisão visível naquele momento. O middleware usa essa revisão em `VaryByValue` e a rota lê o mesmo produto para montar o corpo. Usar a mesma referência evita gravar o corpo antigo sob a chave nova.
+`generation` aumenta apenas quando o handler monta a resposta. Se duas chamadas usam a mesma chave e a resposta ainda está no cache, você vê a mesma geração. `revision` descreve o estado do produto e pode aparecer em várias representações.
 
-A rota de escrita chama `EvictByTagAsync("catalog", ...)` para descartar as representações relacionadas. Uma leitura iniciada antes da mudança ainda pode responder com a revisão que capturou. Se ela preencher o cache depois da invalidação, grava usando a chave antiga e não afeta uma leitura posterior com a revisão atual. O TTL de dois minutos limita a permanência dessas entradas antigas.
+```csharp
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy(catalogTag, policy => policy
+        .Expire(TimeSpan.FromMinutes(2))
+        .Tag(catalogTag)
+        .SetVaryByQuery("view")
+        .VaryByValue(context => new KeyValuePair<string, string>(
+            "revision", context.Features.Get<Product>()!.Revision.ToString(CultureInfo.InvariantCulture))));
+});
+```
 
-## Verifique a invalidação seletiva
+## Invalide a família de respostas quando o preço muda
 
-No [começo rápido](../README.md), faça duas leituras iguais, consulte as outras variantes e altere o preço. Confira o novo `priceInCents` e a nova `revision` nas respostas de catálogo. Compare o `generation` de `/about` antes e depois. A mudança de preço não afeta esse conteúdo.
+O [catálogo](../src/CatalogCache.Api/Catalog.cs) publica um produto imutável com uma revisão nova. A leitura captura a referência antes de consultar o cache. Usa a mesma revisão para escolher a chave e o mesmo produto para montar o corpo. A rota de escrita chama `EvictByTagAsync("catalog", ...)`, que remove entradas associadas ao preço. A tag `about` fica fora do grupo.
 
-Os [testes](../../tests/CatalogCache.Tests/CacheContracts.cs) exercitam diretamente a invalidação pela tag com revisão fixa e também mudam a revisão sem invalidar a tag. Essas situações verificam as duas garantias separadamente.
+Uma leitura que já capturou o produto anterior pode terminar depois da gravação. Se ela repovoar o cache, usa a chave da revisão antiga. A leitura seguinte usa a chave nova. O TTL de dois minutos limita por quanto tempo a entrada velha permanece. Esse detalhe importa em qualquer implementação que permita leituras durante a atualização.
 
-## Escolha o armazenamento conforme a implantação
+## Observe o que reutiliza e o que muda
 
-O catálogo e o cache do laboratório vivem no processo local. Com múltiplas instâncias, a revisão precisa vir de uma fonte coerente entre réplicas. O armazenamento de cache compartilhado e a política de expiração devem acompanhar esse contrato. Use cache de saída para respostas compatíveis com a mesma chave. Respostas personalizadas precisam de uma política que respeite os dados e o escopo de cada usuário.
+Faça as chamadas do [guia](../README.md) na ordem. Compare duas leituras de `brief`, depois `full` e `/catalog/summary`. Após escrever o preço de `12900` centavos, as três rotas do catálogo recebem a nova revisão e novas gerações. `/about` mantém a geração dentro da janela de expiração. Os [testes](../../tests/CatalogCache.Tests/CacheContracts.cs) isolam invalidação por tag e alteração de revisão.
 
-[Documentação de output caching no ASP.NET Core](https://learn.microsoft.com/pt-br/aspnet/core/performance/caching/output?view=aspnetcore-10.0)
+## Leve em conta réplicas e dados personalizados
+
+O cache e as revisões desta aula são locais ao processo. Para múltiplas instâncias, defina uma origem coerente para a revisão e um armazenamento compatível com a política de invalidação. Para respostas personalizadas, revise todas as dimensões que separam os consumidores antes de compartilhar uma entrada.
+
+[Output Caching no ASP.NET Core](https://learn.microsoft.com/pt-br/aspnet/core/performance/caching/output?view=aspnetcore-10.0)
+
+---
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

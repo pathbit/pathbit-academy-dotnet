@@ -45,4 +45,6 @@ Run this command from the lab directory. The tests use an in-memory server witho
 dotnet test ../tests/ProblemDetails.Tests
 ```
 
+[LinkedIn article](article/ARTICLE_LINKEDIN.en.md) · [LinkedIn post](article/POST_LINKEDIN.en.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

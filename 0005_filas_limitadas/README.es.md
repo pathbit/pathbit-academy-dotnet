@@ -53,4 +53,6 @@ Las comprobaciones usan un procesador controlado para llenar la cola sin depende
 dotnet test ../tests/BoundedJobs.Tests
 ```
 
+[Artículo para LinkedIn](article/ARTICLE_LINKEDIN.es.md) · [Publicación para LinkedIn](article/POST_LINKEDIN.es.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

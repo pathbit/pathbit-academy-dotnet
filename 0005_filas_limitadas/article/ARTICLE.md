@@ -1,35 +1,51 @@
-# Filas limitadas com Channels no ASP.NET Core
+# Como aceitar tarefas em segundo plano sem deixar a fila crescer sem limite
 
-[Português (Brasil)](ARTICLE.md) · [English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
+[English](ARTICLE.en.md) · [Español](ARTICLE.es.md)
 
-Uma fila em memória separa o recebimento de uma tarefa do momento em que ela é processada. Quando a chegada supera a capacidade de processamento, limitar a fila mantém previsível o número de tarefas aceitas. Com um limite explícito, o cliente também recebe uma resposta quando deve esperar para tentar de novo.
+Imagine uma API que gera prévias pesadas. Em condições normais as solicitações chegam devagar. Se seis pessoas clicarem juntas, fazer tudo na requisição prende as conexões. Colocar tudo numa fila ilimitada só muda onde a espera se acumula. Um `Channel<T>` limitado permite controlar o volume que o processo aceita e informar ao cliente quando tentar mais tarde.
 
-## Distinga trabalho ativo de trabalho aguardando
+## Calcule a capacidade a partir da vida de uma tarefa
 
-A API tem um consumidor executando uma tarefa por vez. A fila guarda até duas tarefas que ainda não começaram. Com o consumidor ocupado, a instância mantém até três tarefas aceitas, uma em execução e duas esperando. A tarefa deixa de ocupar um espaço da fila quando o consumidor a lê.
+O [canal do laboratório](../src/BoundedJobs.Api/JobQueue.cs) guarda duas tarefas em espera. O único consumidor retira uma tarefa e a processa fora do canal. Com uma em execução, ainda cabem duas aguardando. Um terceiro item aguardando excederia a capacidade configurada.
 
-O [canal](../src/BoundedJobs.Api/JobQueue.cs) usa `BoundedChannelFullMode.Wait`, `SingleReader = true` e `SingleWriter = false`. O modo `Wait` evita descarte automático. Usamos `TryWrite` no endpoint porque a requisição HTTP pode receber o resultado imediatamente. Com o canal cheio, `TryWrite` retorna `false` em vez de aguardar um espaço ou substituir uma tarefa já aceita.
+| Estado | Em execução | Aguardando | Próximo `POST` válido |
+| --- | ---: | ---: | --- |
+| Consumidor ocupado, fila vazia | 1 | 0 | `202` |
+| Dois itens já aguardam | 1 | 2 | `503` com `Retry-After: 1` |
+| O consumidor retirou o próximo | 1 | 1 | `202` |
 
-## Responda pela capacidade observada
+O canal usa `BoundedChannelFullMode.Wait`. O endpoint verifica `TryWrite`, que responde imediatamente se não houver espaço disponível. Uma implementação que use `WriteAsync` pode esperar por espaço. Em uma API síncrona isso muda a latência e exige que o cancelamento da requisição faça parte do desenho.
 
-| Resultado em `POST /jobs` | Resposta | Como interpretar |
-| --- | --- | --- |
-| Campo `units` fora de 1–5 | `400` | Ajuste a entrada |
-| Tarefa colocada na fila | `202` e `id` | A instância aceitou a tarefa para processamento |
-| Fila sem espaço | `503` e `Retry-After: 1` | Tente novamente após a espera sugerida |
+## Diferencie aceitação de conclusão
 
-A resposta `202` confirma a entrada na fila. A conclusão aparece no log do [processador](../src/BoundedJobs.Api/JobWorker.cs) com o mesmo identificador. O segundo sugerido para repetir uma resposta `503` é uma dica e pode ser insuficiente sob carga contínua. Em um cliente automatizado, combine retentativas limitadas com espaçamento crescente. Para repetir depois de perder uma resposta, o contrato precisaria de uma chave de idempotência para evitar tarefas duplicadas.
+`POST /jobs` retorna `202` com o `id` da tarefa aceita. O [BackgroundService](../src/BoundedJobs.Api/JobWorker.cs) registra `Completed job` com aquele identificador. Se `units` estiver fora de 1 a 5, o endpoint responde `400`. Se a fila estiver indisponível por lotação, o `503` pede espera, e o valor de `Retry-After` é uma sugestão para a próxima tentativa.
 
-## Processe sem depender do ciclo de vida da requisição
+Em um cliente automatizado, limite as tentativas e use espera crescente. Repetir uma operação cuja resposta foi perdida pode enfileirar uma segunda tarefa. Se esse risco importa, modele uma chave de idempotência antes de automatizar retentativas.
 
-`BackgroundService` drena o canal com `ReadAllAsync`, seguindo a ordem de chegada ao canal. A falha de uma tarefa é registrada e o consumidor segue para a próxima. O token de encerramento do host interrompe o processamento simulado na parada.
+```csharp
+var job = new Job(Guid.NewGuid(), request.Units);
+if (!queue.TryEnqueue(job))
+{
+    context.Response.Headers.RetryAfter = "1";
+    return Results.Problem(
+        statusCode: StatusCodes.Status503ServiceUnavailable,
+        type: "urn:pathbit:problem:job-queue-full",
+        title: "The job queue is full.");
+}
 
-Cada instância tem seu próprio canal e suas tarefas deixam de existir quando o processo encerra. Em um fluxo que precisa sobreviver a reinicializações ou compartilhar trabalho entre réplicas, use um armazenamento durável e defina um contrato de confirmação, repetição e idempotência.
+return Results.Accepted(value: new { id = job.Id });
+```
 
-## Observe sobrecarga e recuperação
+## Reproduza a sobrecarga e a recuperação
 
-Execute o [laboratório](../README.md), envie o lote de solicitações e espere o consumidor liberar espaço. Compare o `id` das respostas aceitas com o log. Os [testes](../../tests/BoundedJobs.Tests/JobContracts.cs) bloqueiam o primeiro processamento por um sinal explícito, preenchem os outros dois espaços e confirmam o `503`. Depois liberam o processador, validam a ordem e verificam que uma falha não impede o próximo trabalho.
+Siga o [guia](../README.md). Envie o lote, copie os IDs de `202` e compare com o log. Após a conclusão de pelo menos um item, mande nova tarefa. Os [testes](../../tests/BoundedJobs.Tests/JobContracts.cs) controlam a primeira tarefa com um sinal para checar a lotação e a ordem sem depender do escalonamento do sistema.
 
-[Documentação de Channels](https://learn.microsoft.com/pt-br/dotnet/core/extensions/channels)
+## Decida onde a tarefa precisa viver
+
+O canal desta aula vive no processo. Uma reinicialização perde itens pendentes, e cada réplica tem a própria fila. Use um broker ou armazenamento durável quando o trabalho precisar sobreviver a reinícios ou ser compartilhado. O desenho do consumidor precisa definir confirmação, retentativa e recuperação de falhas.
+
+[Documentação de Channels no .NET](https://learn.microsoft.com/pt-br/dotnet/core/extensions/channels)
+
+---
 
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)
