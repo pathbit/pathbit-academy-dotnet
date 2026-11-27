@@ -45,4 +45,6 @@ Ejecuta el comando desde el directorio del laboratorio. Las pruebas levantan el 
 dotnet test ../tests/ProblemDetails.Tests
 ```
 
+[Artículo para LinkedIn](article/ARTICLE_LINKEDIN.es.md) · [Publicación para LinkedIn](article/POST_LINKEDIN.es.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

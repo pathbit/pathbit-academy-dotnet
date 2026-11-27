@@ -1,5 +1,7 @@
 # Liveness e readiness no ASP.NET Core
 
+[Português (Brasil)](README.md) · [English](README.en.md) · [Español](README.es.md)
+
 Uma API mínima expõe dois health checks. O laboratório sobe a API e uma dependência HTTP local via Docker Compose e permite simular uma indisponibilidade.
 
 [Leia o artigo](article/ARTICLE.md)
@@ -59,3 +61,7 @@ A variável `Dependency__HealthUrl` deve apontar para um endpoint HTTP acessíve
 Dependency__HealthUrl=http://127.0.0.1:19704/ \
   dotnet run --project src/HealthChecks.Api -- --urls http://127.0.0.1:19703
 ```
+
+[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
+
+Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

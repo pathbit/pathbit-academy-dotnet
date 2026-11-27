@@ -47,4 +47,6 @@ Las pruebas comprueban las variantes de consulta, la invalidación selectiva y l
 dotnet test ../tests/CatalogCache.Tests
 ```
 
+[Artículo para LinkedIn](article/ARTICLE_LINKEDIN.es.md) · [Publicación para LinkedIn](article/POST_LINKEDIN.es.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

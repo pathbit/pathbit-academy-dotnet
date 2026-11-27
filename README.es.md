@@ -24,7 +24,7 @@ dotnet test
 | --- | --- |
 | [0001 - Registros estructurados con Serilog y Seq (PT-BR)](0001_serilog_seq_logging/README.md) | Centraliza los registros estructurados de una API que consulta un servicio externo. |
 | [0002 - Versionado de API en ASP.NET Core (PT-BR)](0002_versionamento_api/README.md) | Ejecuta dos versiones de una API y revisa las cabeceras y los documentos de Swagger. |
-| [0003 - Liveness y readiness en ASP.NET Core (PT-BR)](0003_liveness_readiness/README.md) | Detén y recupera una dependencia HTTP local para observar las comprobaciones de salud. |
+| [0003 - Liveness y readiness en ASP.NET Core](0003_liveness_readiness/README.es.md) | Detén y recupera una dependencia HTTP local para observar las comprobaciones de salud. |
 | [0004 - Contratos de error HTTP con Problem Details](0004_problem_details/README.es.md) | Inspecciona errores de validación y conflictos de stock con el formato de la RFC 9457. |
 | [0005 - Colas acotadas con Channels en ASP.NET Core](0005_filas_limitadas/README.es.md) | Llena una cola acotada y observa cómo la API se recupera cuando el consumidor libera espacio. |
 | [0006 - Caché de respuestas con invalidación por etiqueta en ASP.NET Core](0006_output_cache/README.es.md) | Compara variantes, cambia un precio y observa la invalidación selectiva. |

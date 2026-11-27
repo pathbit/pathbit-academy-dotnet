@@ -24,7 +24,7 @@ dotnet test
 | --- | --- |
 | [0001 - Structured logging with Serilog and Seq (PT-BR)](0001_serilog_seq_logging/README.md) | Centralize structured logs from an API that calls an external service. |
 | [0002 - API versioning in ASP.NET Core (PT-BR)](0002_versionamento_api/README.md) | Run two API versions and inspect version headers and Swagger documents. |
-| [0003 - Liveness and readiness in ASP.NET Core (PT-BR)](0003_liveness_readiness/README.md) | Stop and restore a local HTTP dependency to observe the health checks. |
+| [0003 - Liveness and readiness in ASP.NET Core](0003_liveness_readiness/README.en.md) | Stop and restore a local HTTP dependency to observe the health checks. |
 | [0004 - HTTP error contracts with Problem Details](0004_problem_details/README.en.md) | Inspect validation errors and stock conflicts in the RFC 9457 format. |
 | [0005 - Bounded queues with Channels in ASP.NET Core](0005_filas_limitadas/README.en.md) | Fill a bounded queue and watch the API recover as the consumer frees space. |
 | [0006 - ASP.NET Core output caching with tag-based eviction](0006_output_cache/README.en.md) | Compare query variants, change a price, and observe selective cache eviction. |

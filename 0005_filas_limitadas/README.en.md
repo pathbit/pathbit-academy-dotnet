@@ -53,4 +53,6 @@ The checks use a controlled processor to keep the queue full without relying on 
 dotnet test ../tests/BoundedJobs.Tests
 ```
 
+[LinkedIn article](article/ARTICLE_LINKEDIN.en.md) · [LinkedIn post](article/POST_LINKEDIN.en.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

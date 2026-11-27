@@ -53,4 +53,6 @@ As verificações usam um processador controlado para ocupar a fila sem depender
 dotnet test ../tests/BoundedJobs.Tests
 ```
 
+[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)

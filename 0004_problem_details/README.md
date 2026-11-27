@@ -45,4 +45,6 @@ Na pasta deste laboratório, rode o comando abaixo. Os testes sobem o servidor e
 dotnet test ../tests/ProblemDetails.Tests
 ```
 
+[Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
+
 Developed with ❤️ by [Pathbit](https://www.pathbit.com.br/)
