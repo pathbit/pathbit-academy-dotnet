@@ -82,15 +82,17 @@ O Pathbit Academy é uma iniciativa da Pathbit para compartilhar conhecimento t�
 
 ## 📖 Como Usar
 
-Cada artigo possui sua própria pasta com a seguinte estrutura:
+Cada laboratório tem um guia e três formatos editoriais em português do Brasil.
 
 ```
 000X_nome_do_artigo/
-├── README.md              # Instruções de execução
+├── README.md               # Instruções de execução
 ├── article/
-│   └── ARTICLE.md        # Conteúdo do artigo
-├── assets/               # Imagens e diagramas, quando aplicável
-└── src/                  # Código fonte completo
+│   ├── ARTICLE.md          # Artigo técnico
+│   ├── ARTICLE_LINKEDIN.md # Artigo para LinkedIn
+│   └── POST_LINKEDIN.md    # Post para LinkedIn
+├── assets/                 # Capturas de execução e diagramas
+└── src/                    # Código-fonte do laboratório
 ```
 
 ## 📧 Contato

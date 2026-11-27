@@ -5,7 +5,7 @@
 API .NET que demonstra **logging estruturado** usando **Serilog** e **Seq**.
 A aplicação consome a API pública do ViaCEP para consultar endereços por CEP, registrando logs estruturados de todas as operações.
 
-[Leia o artigo](article/ARTICLE.md)
+[Leia o artigo](article/ARTICLE.md) · [Artigo para LinkedIn](article/ARTICLE_LINKEDIN.md) · [Post para LinkedIn](article/POST_LINKEDIN.md)
 
 ### 🎯 Funcionalidades
 
